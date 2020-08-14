@@ -1,6 +1,6 @@
 #pragma once
-
 #include <vector>
+#include <stack>
 using namespace std;
 
 struct TreeNode {
@@ -37,5 +37,29 @@ namespace _95BST { //! 95. 不同的二叉搜索树 II
     vector<TreeNode*> generateTrees(int n) {
         if (n < 1) return {};
         return generateTrees(1, n);
+    }
+}
+
+namespace _145Tree { //! 145. 二叉树的后序遍历 DFS
+ vector<int> postorderTraversal(TreeNode* root) {
+     stack<TreeNode*> s;
+     vector<int> res;
+     TreeNode* lastVisited = nullptr; // 上一个被访问的节点
+        while (!s.empty() || root) {
+            if (root) {
+                s.push(root);
+                root = root->left;
+            } else {
+                TreeNode* topNode = s.top();
+                if (topNode->right && lastVisited != topNode->right) { // 判断右子节点是否访问 若未访问
+                    root = topNode->right;
+                } else { // 若右子节点不存在或已被访问  则topNode左右无节点 或 左右节点已被访问
+                    res.push_back(topNode->val);
+                    lastVisited = topNode;
+                    s.pop();
+                }
+            }
+        }
+        return res;
     }
 }
