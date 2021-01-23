@@ -3,7 +3,7 @@
     "tasks": [
         {
             "label": "task g++",
-            "command": "g++",
+            "command": "D:/mingw64/bin/g++.exe",
             "args": [
                 "${file}", // 指定编译源代码文件
                 "-o",
@@ -14,9 +14,9 @@
                 "-ggdb3", // 生成和调试有关的信息
                 "-Wall", // 开启额外警告
                 "-static-libgcc", // 静态链接
-                "-std=c++2a", // 使用c++17标准
+                "-std=c++17", // 使用c++17标准
                 "-finput-charset=UTF-8", //输入编译器文本编码 默认为UTF-8
-                "-fexec-charset=GBK", //输出exe文件的编码
+                // "-fexec-charset=GBK", //输出exe文件的编码
                 "-D _USE_MATH_DEFINES"
             ],
             "problemMatcher": {

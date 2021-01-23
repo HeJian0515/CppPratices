@@ -212,3 +212,197 @@ int shortestPathBinaryMatrix(vector<vector<int>>& grid) {
 }
 }  // namespace _1091LC
 
+//*完全平方数
+namespace _279LC {
+unordered_set<int> square_nums;
+//! n是否可以被count个平方数相加得到
+bool is_divided_by(int n, int count) {
+    if (count == 1) return square_nums.count(n);
+
+    for (int square : square_nums) {
+        if (is_divided_by(n - square, count - 1)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+//!可以不用返回确切的组合
+int numSquares(int n) {
+    square_nums.clear();
+
+    for (int i = 1; i * i <= n; ++i) {
+        square_nums.emplace(i * i);
+    }
+    int count = 1;
+    for (; count <= n; ++count) {
+        if (is_divided_by(n, count)) {  //!是否可以被count数组合而成
+            return count;
+        }
+    }
+    return count;
+}
+
+int numSquares_1(int n) {
+    vector<int> asquare_nums;
+    for (int i = 0; i * i <= n; ++i) {
+        asquare_nums.emplace_back(i * i);
+    }
+
+    unordered_set<int> que;
+    que.emplace(n);
+
+    int level = 0;
+    while (que.size() > 0) {
+        level += 1;
+        unordered_set<int> next_que;
+        for (int remainder : que) {
+            for (int square : asquare_nums) {
+                if (remainder == square) {
+                    return level;
+                } else if (remainder < square) {
+                    break;
+                } else {
+                    next_que.emplace(remainder - square);
+                }
+            }
+        }
+        que = next_que;
+    }
+    return level;
+}
+
+int numSquares_2(int n) {
+    //! 记录所有小于n的平方数
+    vector<int> squares;
+    for (int i = 1; i * i <= n; ++i) {
+        squares.emplace_back(i * i);
+    }
+
+    queue<int> que;
+    vector<int> marked(n + 1, false);  //! 用来标记最快到达next的level
+    que.push(n);
+    marked[n] = true;
+    int level = 0;
+
+    while (!que.empty()) {
+        int size = que.size();
+        level++;
+        while (size-- > 0) {
+            int cur = que.front();
+            que.pop();
+            for (int s : squares) {
+                int next = cur - s;
+                if (next < 0) {
+                    break;
+                } else if (next == 0) {
+                    return level;
+                }
+
+                if (marked[next]) continue;
+
+                marked[next] = true;
+                que.push(next);
+            }
+        }
+    }
+    return level;
+}
+}  // namespace _279LC
+
+//!单词接龙
+
+namespace _127LC {
+
+bool isOneCharDifferent(const string& s1, const string& s2) {
+    int count = 0;
+    for (int i = 0; i < s1.length(); ++i) {
+        if (s1[i] != s2[i]) {
+            ++count;
+            if (count > 1) return false;
+        }
+    }
+    return count == 1;
+}
+int ladderLength(string beginWord, string endWord, vector<string>& wordList) {
+    unordered_set<string> wordSet(wordList.cbegin(), wordList.cend());
+    if (!wordSet.count(endWord)) return 0;
+
+    unordered_set<string> upTodown({beginWord});
+    unordered_set<string> downToup({endWord});
+
+    int word_size = beginWord.size();
+    int list_size = wordList.size();
+
+    vector<int> marked(list_size, false); //!标记wordList已经访问过的元素
+    int res = 2;
+
+    while (!upTodown.empty()) {
+        unordered_set<string> next;  // 下一层元素
+        for (auto& word : upTodown) {
+            for (int i = 0; i < list_size; ++i) {
+                // 找到下一层元素
+                if (isOneCharDifferent(word, wordList[i])) {
+                    //! 是否已连接
+                    if (downToup.count(wordList[i])) return res;
+                    // 下一层元素入队
+                    if (!marked[i]) next.insert(wordList[i]);
+                    marked[i] = true; // 标记已访问元素
+                }
+            }
+        }
+        ++res;
+        if (next.size() <= downToup.size()) {
+            upTodown = next;
+        } else {
+            upTodown = downToup;
+            downToup = next;
+        }
+    }
+    return 0;
+}
+
+int ladderLength(string beginWord, string endWord, vector<string>& wordList) {
+    //!记录所有节点
+    unordered_set<string> wordDict(wordList.cbegin(), wordList.cend());
+    if (!wordDict.count(endWord)) return 0; 
+
+    unordered_set<string> beginSet{beginWord};
+    unordered_set<string> endSet{endWord};
+
+    int step = 1;
+    while (!beginSet.empty()) {
+        unordered_set<string> next; // 前面入队节点的下一层子节点
+        ++step;
+        for (auto& s: beginSet) { // 删除已经访问过的上一层节点
+            wordDict.erase(s);
+        }
+
+        for (auto& s: beginSet) {
+            for (int i = 0; i < s.size(); ++i) {
+                string str(s);
+                for (char c = 'a'; c <= 'z'; ++c) {
+                    str[i] = c;//! 只将上一层节点字符串改变一个字符
+                    //! 判断下一层是否有 上一层字符串 只改变一个字符 的字符串
+                    if (!wordDict.count(str)) {
+                        continue;
+                    }
+                    if (endSet.count(str)) {
+                        return step;
+                    }
+                    next.insert(str);//下一层要访问的节点入队
+                }
+            }
+        }
+        //始终保持路径短的一侧开始遍历
+        if (next.size() < endSet.size()) {
+            beginSet = next;
+        } else {
+            beginSet = endSet;
+            endSet = next;
+        }
+    }
+    return 0;
+}
+
+}  // namespace _127LC

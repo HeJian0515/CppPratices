@@ -27,7 +27,8 @@ bool isValidBST_helper(TreeNode* root, const long& lower, const long upper) {
 }  // namespace _92dfs
 //TODO ***************************************************************************************************************
 
-namespace _200dfs { //! 200. 岛屿数量
+//*200 岛屿数量
+namespace _200dfs {  //! 200. 岛屿数量
 void dfs(vector<vector<char>>& grid, int row, int col) {
     int rowNum = grid.size();
     int colNum = grid[0].size();
@@ -54,11 +55,45 @@ int numIslands(vector<vector<char>>& grid) {
     }
     return islandsNum;
 }
+//todo========================================================================================================
+constexpr static int directions[][2] = {{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
+int row, col;
 
-}  // namespace _100dfs
+inline bool inGrid(int r, int c) {
+    return r >= 0 && r < row && c >= 0 && c < col;
+}
+
+//! 将深度优先遍历到的位置全部置为0
+void _dfs(vector<vector<char>>& grid, int r, int c) {
+    grid[r][c] = '0';
+    for (int i = 0; i < 4; ++i) {
+        int next_r = r + directions[i][0];
+        int next_c = c + directions[i][1];
+        if (inGrid(next_r, next_c) && grid[next_r][next_c] == '1') _dfs(grid, next_r, next_c);
+    }
+}
+
+int numIslands(vector<vector<char>>& grid) {
+    row = grid.size();
+    if (row < 1) return 0;
+    col = grid[0].size();
+
+    int ans = 0;
+    for (int i = 0; i < row; ++i) {
+        for (int j = 0; j < col; ++j) {
+            if (grid[i][j] == '1') {
+                ++ans;
+                _dfs(grid, i, j);
+            }
+        }
+    }
+    return ans;
+}
+
+}  // namespace _200dfs
 
 //TODO ================================================================================================
-namespace _105BiTree { //! 105.从前序与中序遍历序列构造二叉树
+namespace _105BiTree {  //! 105.从前序与中序遍历序列构造二叉树
 /**
  * @brief: 由前序遍历和中序遍历构建二叉树
  * @name: He Jian
@@ -72,15 +107,15 @@ namespace _105BiTree { //! 105.从前序与中序遍历序列构造二叉树
  */
 TreeNode* helper(vector<int>& preorder, vector<int>& inorder, int leftpre, int rightpre, int leftin, int rightin) {
     if (leftpre >= rightpre || leftin >= rightin) return nullptr;
-    TreeNode* root = new TreeNode(preorder[leftpre]);// 前序遍历第一个节点是根节点
+    TreeNode* root = new TreeNode(preorder[leftpre]);  // 前序遍历第一个节点是根节点
     //! =========================在中序数组中找到根节点的索引=========================================
     int rootin = leftin;
-    while (rootin < rightin && inorder[rootin] != preorder[leftpre]) ++rootin;// 在中序遍历中找到根节点
+    while (rootin < rightin && inorder[rootin] != preorder[leftpre]) ++rootin;  // 在中序遍历中找到根节点
     //! =========================在中序数组中找到根节点的索引=========================================
-    int left = rootin - leftin; // 左子树的节点个数 从中序遍历得到
+    int left = rootin - leftin;  // 左子树的节点个数 从中序遍历得到
     // 构建左子树
     root->left = helper(preorder, inorder, leftpre + 1, leftpre + left + 1, leftin, rootin);
-    // 构建右子树                              
+    // 构建右子树
     root->right = helper(preorder, inorder, leftpre + left + 1, rightpre, rootin + 1, rightin);
     return root;
 }
@@ -91,43 +126,201 @@ TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {
 }  // namespace _105BiTree
 
 //TODO ==========================================================================================================
-namespace _106BiTree { //! 106.从中序与后序遍历序列构造二叉树
-    TreeNode* helper(vector<int>& inorder, vector<int>& postorder,int left_in, int right_in, int left_post, int right_post) {
-        if (left_in >= right_in || left_post >= right_post) return nullptr;
-        TreeNode* root = new TreeNode(postorder[right_post-1]); // 后序遍历最后一个节点是树的根
-        int root_in = left_in; // 在中序数组中找根的索引
-        while (root_in<right_in && inorder[root_in]!=postorder[right_post-1]) ++root_in;
-        int lchild_num = root_in - left_in; // 左孩子的个数
-        // 构建左子树
-        root->left = helper(inorder, postorder, left_in, root_in, left_post, left_post + lchild_num);
-        // 构建右子树
-        root->right = helper(inorder, postorder, root_in+1, right_in, left_post+lchild_num,  right_post-1);
-    }
-    TreeNode* buildTree(vector<int>& inorder, vector<int>& postorder) {
-        return helper(inorder, postorder, 0, inorder.size(), 0, postorder.size());
-    }
+namespace _106BiTree {  //! 106.从中序与后序遍历序列构造二叉树
+TreeNode* helper(vector<int>& inorder, vector<int>& postorder, int left_in, int right_in, int left_post, int right_post) {
+    if (left_in >= right_in || left_post >= right_post) return nullptr;
+    TreeNode* root = new TreeNode(postorder[right_post - 1]);  // 后序遍历最后一个节点是树的根
+    int root_in = left_in;                                     // 在中序数组中找根的索引
+    while (root_in < right_in && inorder[root_in] != postorder[right_post - 1]) ++root_in;
+    int lchild_num = root_in - left_in;  // 左孩子的个数
+    // 构建左子树
+    root->left = helper(inorder, postorder, left_in, root_in, left_post, left_post + lchild_num);
+    // 构建右子树
+    root->right = helper(inorder, postorder, root_in + 1, right_in, left_post + lchild_num, right_post - 1);
 }
+TreeNode* buildTree(vector<int>& inorder, vector<int>& postorder) {
+    return helper(inorder, postorder, 0, inorder.size(), 0, postorder.size());
+}
+}  // namespace _106BiTree
 
 //todo========================================================================================================
-namespace _111BiTree { //! 111. 二叉树的最小深度
+namespace _111BiTree {  //! 111. 二叉树的最小深度
 
-    int helper(TreeNode* root) {
-        if (root == nullptr) return 0;
-        if (root->left != nullptr && root->right != nullptr) { // 两边都不为空时 res = min(左子树深度， 右子树深度) + 1
-            int leftDepth = helper(root->left);
-            int rightDepth = helper(root->right);
-            return leftDepth < rightDepth ? leftDepth + 1: rightDepth + 1;
-        } else if (root->right == nullptr && root->left != nullptr) { // 左子树不为空且右子树为空时 res = （左子树深度）+ 1
-            return helper(root->left) + 1;
-        } else if (root->left ==nullptr && root->right != nullptr) { // 右子树不为空且右子树为空时 res = （右子树深度）+ 1
-            return helper(root->right) + 1;
-        }
-        else {
-            return 1;// 左右子树都为空时 res = 1
-        } 
-    }
-    int minDepth(TreeNode* root) {
-        return helper(root);
+int helper(TreeNode* root) {
+    if (root == nullptr) return 0;
+    if (root->left != nullptr && root->right != nullptr) {  // 两边都不为空时 res = min(左子树深度， 右子树深度) + 1
+        int leftDepth = helper(root->left);
+        int rightDepth = helper(root->right);
+        return leftDepth < rightDepth ? leftDepth + 1 : rightDepth + 1;
+    } else if (root->right == nullptr && root->left != nullptr) {  // 左子树不为空且右子树为空时 res = （左子树深度）+ 1
+        return helper(root->left) + 1;
+    } else if (root->left == nullptr && root->right != nullptr) {  // 右子树不为空且右子树为空时 res = （右子树深度）+ 1
+        return helper(root->right) + 1;
+    } else {
+        return 1;  // 左右子树都为空时 res = 1
     }
 }
+int minDepth(TreeNode* root) {
+    return helper(root);
+}
+}  // namespace _111BiTree
+
+//*695. 岛屿的最大面积
+namespace _695LC {
+
+// 上下左右四个方向
+constexpr static int directions[][2] = {{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
+int col, row;
+vector<vector<int>>* grids;
+
+// 判断（r,c)是否在范围内
+inline bool inGrid(int r, int c) {
+    return r >= 0 && r < row && c >= 0 && c < col;
+}
+
+int dfs(int r, int c) {
+    if (!inGrid(r, c) || (*grids)[r][c] == 0) return 0;
+    (*grids)[r][c] = 0;
+    int ans = 1;
+    for (int i = 0; i < 4; ++i) {
+        ans += dfs(r + directions[i][0], c + directions[i][1]);
+    }
+    return ans;
+}
+
+int maxAreaOfIsland(vector<vector<int>>& grid) {
+    grids = &grid;
+    row = grid.size();
+    col = grid[0].size();
+
+    int maxArea = 0;
+    for (int i = 0; i < row; ++i) {
+        for (int j = 0; j < col; ++j) {
+            maxArea = std::max(maxArea, dfs(i, j));
+        }
+    }
+    return maxArea;
+}
+}  // namespace _695LC
+
+//* 朋友圈
+namespace _547LC {
+
+void dfs(vector<vector<int>>& m, vector<int>& visited, int i) {
+    for (int j = 0; j < m.size(); ++j) {
+        if (m[i][j] == 1 && visited[j] == 0) {
+            visited[j] = 1;
+            dfs(m, visited, j);
+        }
+    }
+}
+
+int findCircleNum(vector<vector<int>>& M) {
+    vector<int> visited(M.size(), 0);
+    int count = 0;
+
+    for (int i = 0; i < M.size(); ++i) {
+        if (visited[i] == 0) {
+            dfs(M, visited, i);
+            ++count;
+        }
+    }
+
+    return count;
+}
+
+}  // namespace _547LC
+
+//*130被围绕的区域
+namespace _130LC {
+int row, col;
+
+void dfs(vector<vector<char>>& board, int r, int c) {
+    if (r < 0 || r >= row || c < 0 || c >= col || board[r][c] != 'O') return;
+    board[r][c] = 'V';  // 标记开始的'O'及其连通的'O', 'V'表示已访问
+    dfs(board, r + 1, c);
+    dfs(board, r - 1, c);
+    dfs(board, r, c + 1);
+    dfs(board, r, c - 1);
+}
+void solve(vector<vector<char>>& board) {
+    row = board.size();
+    if (row == 0) return;
+    col = board[0].size();
+
+    // 每一行的边界
+    for (int i = 0; i < row; ++i) {
+        dfs(board, i, 0);
+        dfs(board, i, col - 1);
+    }
+
+    // 每一列的边界
+    for (int i = 1; i < col - 1; ++i) {
+        dfs(board, 0, i);
+        dfs(board, row - 1, i);
+    }
+
+    for (int i = 0; i < row; ++i) {
+        for (int j = 0; j < col; ++j) {
+            if (board[i][j] == 'V') {
+                board[i][j] = 'O';
+            } else if (board[i][j] == 'O') {
+                board[i][j] = 'X';
+            }
+        }
+    }
+}
+}  // namespace _130LC
+
+
+//*417太平洋大西洋水流问题
+namespace _417LC {
+int row, col;
+vector<vector<int>>* mat;
+constexpr static int direction[][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+
+void dfs(int r, int c, vector<vector<char>>& canReach) {
+    if (canReach[r][c]) return;
+    canReach[r][c] = true;
+    for (auto& d : direction) {
+        int nextR = d[0] + r;
+        int nextC = d[1] + c;
+        if (nextR < 0 || nextR >= row || nextC < 0 || nextC >= col || (*mat)[r][c] > (*mat)[nextR][nextC]) {
+            continue;
+        }
+        //! 逆流而上
+        dfs(nextR, nextC, canReach);
+    }
+}
+vector<vector<int>> pacificAtlantic(vector<vector<int>>& matrix) {
+    vector<vector<int>> ret;
+    if (matrix.size() < 1) return ret;
+
+    row = matrix.size();
+    col = matrix[0].size();
+    mat = &matrix;
+
+    vector<vector<char>> canReachP(row, vector<char>(col, false));
+    vector<vector<char>> canReachA(row, vector<char>(col, false));
+
+    for (int i = 0; i < row; ++i) {
+        dfs(i, 0, canReachP); // 从左边界开始能到达太平洋
+        dfs(i, col-1, canReachA); // 从右边界开始到达大西洋
+    }
+
+    for (int i = 1; i < col-1; ++i) {
+        dfs(0, i, canReachP); // 从上边界开始到达太平洋
+        dfs(row-1, i, canReachA); // 从下边界开始到达大西洋
+    }
+
+    for (int i = 0; i < row; ++i) {
+        for (int j = 0; j < col; ++j) {
+            if (canReachP[i][j] && canReachA[i][j]) {
+                ret.push_back({i, j});
+            }
+        }
+    }
+    return ret;
+}
+}  // namespace _417LC
 
