@@ -12,7 +12,10 @@
 #include <cstdlib>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
+#include <set>
 #include <vector>
+#include <deque>
 using namespace std;
 
 struct TreeNode {
@@ -674,3 +677,125 @@ vector<vector<int>> permute_1(vector<int>& nums) {
     return res;
 }
 }  // namespace _46LC
+
+namespace _47PermuteUnique{
+
+set<vector<int>> resSet;
+unordered_set<int> selectedIndex;
+void backtrack(vector<int>& nums, vector<int>& track) {
+    if (track.size() == nums.size()) {
+        resSet.emplace(track);
+        return;
+    }
+    for (int i = 0;  i < nums.size(); ++i) {
+        if (selectedIndex.count(i)) continue; // 已经选择过
+        // 选择
+        track.emplace_back(nums[i]);
+        selectedIndex.emplace(i);
+
+        backtrack(nums, track);
+
+        selectedIndex.erase(i);
+        track.pop_back();
+    }
+
+}
+
+vector<vector<int>> permuteUnique(vector<int>& nums) {
+    resSet.clear();
+    selectedIndex.clear();
+    vector<int> track;
+    backtrack(nums, track);
+    return vector<vector<int>>(resSet.begin(), resSet.end());
+}
+//*====================================================================
+vector<vector<int>> res;
+vector<bool> selectIndex;
+
+void backtrack_1(vector<int>& nums, vector<int>& track) {
+    if (nums.size() == track.size()) res.emplace_back(track);
+    else 
+    {
+        for (int i = 0; i < nums.size(); ++i) {
+            if (false == selectIndex[i]) {
+                if (i > 0 && nums[i] == nums[i-1] &&  false == selectIndex[i-1]) {
+                    continue; // 去重
+                }
+                track.emplace_back(nums[i]);
+                selectIndex[i] = true;
+
+                backtrack_1(nums, track);
+
+                selectIndex[i] = false;
+                track.pop_back();
+            }
+        }
+    }
+}
+
+vector<vector<int>> permuteUnique_1(vector<int>& nums) {
+    if (nums.empty()) return{};
+    else if (nums.size() == 1) return {{nums[0]}};
+    else 
+    {
+        res.clear();
+        selectIndex.clear();
+        selectIndex = vector<bool>(nums.size(), false);
+
+        vector<int> track;
+        std::sort(nums.begin(), nums.end());
+        backtrack_1(nums, track);
+
+        return res;
+    }
+}
+
+}
+
+namespace _77Combine {
+
+// 函数的意义是:从[start, n]中选出 k个递增的数 
+// track 表示先前选的的数
+void backtracking(vector<vector<int>>& res, vector<int>& track, int start, int k, const int n) {
+    if (0 == k) {
+        res.emplace_back(track);
+        return;
+    }
+    // track 长度加上区间[start, n]的长度小于k,不可能构造出长度为k的track  n -start + 1 >= k
+    for (int i = start; i <= n - k + 1; ++i) {
+        track.emplace_back(i);
+        backtracking(res, track, i + 1, k - 1, n);
+        track.pop_back();
+    }
+}
+
+vector<vector<int>> combine(int n, int k) {
+    vector<vector<int>> res;
+    vector<int> track;
+    backtracking(res, track, 1, k, n);
+    return res;
+}
+
+//*====================================================================================================
+vector<int> path;
+vector<vector<int>> ans;
+void dfs(int cur, int n, int k) {
+    if (path.size() + (n - cur + 1) < k) { return;}
+
+    if (path.size() == k) {
+        ans.emplace_back(path);
+        return;
+    }
+
+    // 考虑选择当前位置
+    path.push_back(cur);
+    dfs(cur + 1, n, k);
+    path.pop_back();
+    // 考虑不选择当前位置
+    dfs(cur + 1, n, k);
+}
+vector<vector<int>> combine_1(int n, int k) {
+    dfs(1, n, k);
+    return ans;
+}
+}

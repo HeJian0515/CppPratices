@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <vector>
 #include <string>
+#include <unordered_map>
+#include <climits>
 using namespace std;
 
 namespace _435Interval {  //! 435. 无重叠区间
@@ -67,5 +69,79 @@ bool IsSubsequence(string s, string t) {
     }
     return true;
 
+}
+}
+
+namespace _53MaxSubArray {
+//* 暴力法
+int maxSubArray(vector<int>& nums) {
+    int max = INT_MIN;
+    for (int i = 0; i < nums.size(); ++i) {
+        int sum_iToj = 0;
+        for (int j = i ; j < nums.size(); ++j) {
+            sum_iToj += nums[j];
+            max = std::max(max, sum_iToj);
+        }
+    }
+    return max;
+}
+// f(i) 以i为结尾的序列的最大和 f(i) = max{f(i-1)+a[i], a[i]}
+int maxSubArray_1(vector<int>& nums) {
+    int pre = 0;
+    int maxAns = nums[0];
+    for (const auto x : nums) {
+        pre = std::max(pre + x, x);
+        maxAns = std::max(maxAns, pre);
+    }
+    return maxAns;
+}
+}
+
+namespace _763partitionLabels{
+//*每次找第一个字母出现的最后位置 再找第二个字母出现的最后位置...
+vector<int> partitionLabels(string S) {
+    unordered_map<char, int> charIndexMap; // 记录字符最后一次出现的位置
+    int strLen = S.size();
+    for (int i = 0; i < strLen; ++i) {
+        charIndexMap[S[i]] = i;
+    }
+
+    vector<int> res;
+    int start = 0;
+    int end = 0;
+
+    for (int i = 0; i < strLen; ++i) {
+        end = std::max(end, charIndexMap[S[i]]);
+        if (i == end) {
+            res.push_back(end - start + 1);
+            start = end + 1;
+        }
+    }
+
+    return res;
+}
+
+// 用变长数组代替map
+vector<int> partitionLabels_1(string S) {
+    vector<int> charIndexMap(26, INT_MAX);
+    int strLen = S.size();
+    // 建立字符和最后一次出现位置的映射
+    for (int i = 0; i < strLen; ++i) {
+        charIndexMap[S[i]-'a'] = i;
+    }
+
+    vector<int> res;
+    int start = 0;
+    int end = 0;
+
+    for (int i = 0; i < strLen; ++i) {
+        end = std::max(end, charIndexMap[S[i] - 'a']);
+        if (i == end) {
+            res.push_back(end - start + 1);
+            start = end + 1;
+        }
+    }
+
+    return res;
 }
 }
