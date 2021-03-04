@@ -92,6 +92,7 @@ vector<TreeNode*> GenetateTrees(int left, int right) {
         vector<TreeNode*> leftTress = GenetateTrees(left, i - 1);
         // 右子树集合
         vector<TreeNode*> rightTress = GenetateTrees(i+1, right);
+        allTrees.reserve(leftTress.size() * rightTress.size());
         // 左右子树和根节点组成一颗树
         for (auto& leftRoot : leftTress) {
             for (auto& rightRoot : rightTress) {

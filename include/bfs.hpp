@@ -311,7 +311,6 @@ int numSquares_2(int n) {
 }  // namespace _279LC
 
 //!单词接龙
-
 namespace _127LC {
 
 bool isOneCharDifferent(const string& s1, const string& s2) {

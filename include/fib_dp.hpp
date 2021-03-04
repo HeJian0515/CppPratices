@@ -47,3 +47,52 @@ int fib_dpTable_only2states(int N) {
     return curr;
 }
 
+//!====================== 斐波那契数列================================
+namespace _70climbStairs
+{
+int climbStairs(int n) {
+    int f1 = 1;
+    int f2 = 2;
+    for (int i = 3; i <= n; ++i) {
+        int tmp = f1 + f2;
+        f1 = f2;
+        f2 = tmp;
+    }
+    return 1 == n ? f1 : f2;
+}
+}
+
+namespace _198rob
+{
+int rob(vector<int>& nums) {
+    int pre1 = 0;
+    int pre2 = 0;
+    for (int i = 0, n = nums.size(); i < n; ++i) {
+        int cur = std::max(pre1 + nums[i], pre2);
+        pre1 = pre2;
+        pre2 = cur;
+    }
+    return pre2;
+}
+}
+
+namespace _213rob
+{
+int myRob(vector<int>& nums, int first, int last) {
+    int pre1 = 0;
+    int pre2 = 0;
+    for (int i = first; i <= last; ++i) {
+        int cur = std::max(pre1 + nums[i], pre2);
+        pre1 = pre2;
+        pre2 = cur;
+    }
+    return pre2;
+}
+int rob(vector<int>& nums) {
+    int n = nums.size();
+    if (0 == n) return 0;
+    if (1 == n) return nums[0];
+    // 第0位和第n-1位不能同时取
+    return std::max(myRob(nums, 0, n - 2), myRob(nums, 1, n -1));
+}
+}
