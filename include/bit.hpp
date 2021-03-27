@@ -89,6 +89,14 @@ uint32_t reverseBits(uint32_t n) {
 namespace _231isPowerTwo
 {
     bool isPowerOfTwo(int n) {
-        return 0 == (n & (n-1));
+        return n > 0 && 0 == (n & (n -1));
+    }
+}
+
+namespace _693hasAlternatingBits
+{
+    bool hasAlternatingBits(int n) {
+        int num = (n ^ (n >> 1));
+        return 0 == (num & (num + 1));
     }
 }

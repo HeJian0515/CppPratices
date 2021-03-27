@@ -73,3 +73,35 @@ namespace _147List {
         return dummyHead->next;
     }
 }    
+
+
+namespace _338countBits
+{
+vector<int> countBits(int num) {
+    vector<int> bits(num + 1);
+    int highBit = 0;
+    for (int i = 1; i <= num; ++i) {
+        if ((i & (i-1)) == 0) {
+            highBit = i;
+        }
+        bits[i] = bits[i - highBit] + 1;
+    }
+    return bits;
+}
+
+vector<int> countBits_1(int num) {
+    vector<int> bits(num + 1);
+    for (int i = 0; i <= num; ++i) {
+        bits[i] = bits[i>>1] + (i & 1);
+    }
+    return bits;
+}
+
+vector<int> countBits_2(int num) {
+    vector<int> bits(num+1);
+    for (int i = 1; i <= num; ++i) {
+        bits[i] = bits[i & (i-1)] + 1;
+    }
+    return bits;
+}
+}

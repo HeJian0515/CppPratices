@@ -37,6 +37,7 @@ int largestRectangleArea2(vector<int>& heights) {
     vector<int> left(n), right(n);
 
     stack<int> mono_stack;
+    // 左边第一个比i 低的为其左边界
     for (int i = 0; i < n; ++i) {
         while (!mono_stack.empty() && heights[mono_stack.top()] >= heights[i]) {
             mono_stack.pop();
