@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <numeric>
 #include <vector>
 #include <string>
 #include <unordered_map>
@@ -143,5 +144,80 @@ vector<int> partitionLabels_1(string S) {
     }
 
     return res;
+}
+}
+
+
+// 分发饼干
+// 让饥饿度最小的找到能满足的最小饼干
+namespace _455findContentChildren {
+int findContentChildren(vector<int>& g, vector<int>& s)
+{
+    sort(g.begin(), g.end());
+    sort(s.begin(), s.end());
+
+    int m = g.size();
+    int n = s.size();
+    int i = 0, j = 0;
+    while (j < n && i < m)
+    {
+        if (g[i] <= s[j]) {
+            ++i;
+        };
+        ++j;
+    }
+    return i;
+}
+}
+
+// 135 分发糖果
+// 升序序列从1开始，降序序列也从1开始
+// 升序序列长度等于最后一个人分到的糖果数，降序序列长度等于第一个人分到的糖果数
+namespace _135candy {
+int candy(vector<int>& ratings)
+{
+    int n = ratings.size();
+    int ret = 1; 
+    int inc = 1; // 升序序列长度
+    int dec = 0; // 降序序列长度
+    int pre = 1; // 上一个人分发的数量
+
+    for (int i = 1; i < n; ++i) {
+        if (ratings[i] >= ratings[i-1]) {
+            dec = 0;
+            pre = (ratings[i] == ratings[i-1]) ? 1 : pre+1;
+            ret += pre;
+            inc = pre; // 更新升序序列数量
+        } else {
+            dec++;
+            if (dec == inc) { // 当降序序列长度等于升序时，将升序最后一个元素视为降序序列中第一个元素
+                dec++;
+            }
+            ret += dec; // 降序序列以1结尾,前面的全部+1
+            pre = 1;
+        }
+    }
+
+    return ret;
+}
+
+int candy_1(vector<int>& ratings) 
+{
+    int n = ratings.size();
+    if (n < 2) return n;
+
+    vector<int> num(n, 1); // 先给每个人分配一个糖果
+    for (int i = 1; i < n; ++i) {
+        if (ratings[i] > ratings[i-1]) {
+            num[i] = num[i-1] + 1;
+        }
+    }
+
+    for (int i = n-1; i > 0; --i) {
+        if (ratings[i] < ratings[i-1]) {
+            num[i-1] = max(num[i-1], num[i]+1);
+        }
+    }
+    return accumulate(num.cbegin(), num.cend(), 0);
 }
 }
