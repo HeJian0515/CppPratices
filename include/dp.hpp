@@ -644,9 +644,9 @@ bool isMatchHelper(int i, int j)
     bool first = (i < ssv.length() && (psv[j] == ssv[i] || psv[j] == '.'));
 
     bool ans = false;
-    if (j <= psv.length()-2 && psv[j+1] == '*') {
+    if (j < psv.length()-2 && psv[j+1] == '*') {
             // 与*匹配0次
-        ans = (isMatchHelper(i, j+2) || (first && isMatchHelper(i+1, j))); 
+        ans = ((first && isMatchHelper(i+1, j+2)) || (first && isMatchHelper(i+1, j))); 
     } else {
         ans = (first && isMatchHelper(i+1, j+1));
     }
@@ -670,8 +670,9 @@ bool isMatch_1(const string& s, const string& p)
     int m = s.length();
     int n = p.size();
 
+    // s[0:i] p[0:j]
     auto matches = [&s, &p](const int i, const int j) {
-        if (0 == i) {
+        if (0 == i) { // s[0:0]为空串
             return false;
         }
         if ('.' == p[j-1]) {
@@ -681,20 +682,21 @@ bool isMatch_1(const string& s, const string& p)
         return s[i-1] == p[j-1];
     };
 
+    // dp[i][j] 表示 s 的前 i 个是否能被 p 的前 j 个匹配
     vector<vector<int>> f(m+1, vector(n+1, 0));
     f[0][0] = true;
 
     for (int i = 0; i <= m; ++i) {
         for (int j = 1; j <= n; ++j) {
             if ('*' == p[j-1]) {
-                f[i][j] = f[i][j-2];
+                f[i][j] |= f[i][j-2]; // 不使用 (char + *)
                 if (matches(i, j-1)) {
-                    f[i][j] =  f[i-1][j];
+                    f[i][j] |= f[i-1][j]; // 与 (char + *)匹配, 继续使用(char + *)
                 }
             }
             else {
                 if (matches(i, j)) {
-                    f[i][j] = f[i-1][j-1];
+                    f[i][j] |= f[i-1][j-1];
                 }
             }
         }

@@ -1,3 +1,6 @@
+#include <algorithm>
+#include <numeric>
+
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -154,5 +157,79 @@ int lengthOfLongestSubstring(const string& s) {
        maxLen = std::max(maxLen, right -left);
    }
    return maxLen;
+}
+}
+
+namespace _threeSum {
+vector<vector<int>> threeSum(vector<int>& nums) {
+    std::sort(nums.begin(), nums.end());
+
+    vector<vector<int>> res;
+    int n = nums.size();
+    for (int first = 0; first < n; ++first) {
+        if (first > 0 && nums[first] == nums[first - 1]) {
+            continue;
+        }
+
+        int target = -nums[first];
+        int thrid = n -1;
+        for (int second = first + 1; second < n; ++second) {
+            if (second > first + 1 && nums[second] == nums[second - 1]) {
+                continue;
+            }
+
+            while (second < thrid && nums[second] + nums[thrid] > target) {
+                --thrid;
+            }
+
+            if (second == thrid) break;
+
+            if (nums[second] + nums[thrid] == target) {
+                res.push_back({nums[first], nums[second], nums[thrid]});
+            }
+        }
+    }
+    return res;
+}
+
+vector<vector<int>> threeSum(vector<int>& nums) {
+    std::sort(nums.begin(), nums.end());
+    vector<vector<int>> res;
+    int n = nums.size();
+    if (n < 3 || nums[0] > 0 || nums[n-1] < 0) {
+        return res;
+    }
+
+    for (int first = 0; first < n; ++first) {
+        if (first > 0 && nums[first] == nums[first - 1]) continue;
+        if (nums[first] > 0) break;
+       
+
+        // 双指法求TwoSum
+        int second = first + 1;
+        int third = n - 1;
+        int target = -nums[first];
+        while (second < third) {
+            int sum = nums[second] + nums[third];
+
+            if (sum == target) {
+                res.push_back({nums[first], nums[second], nums[third]});
+                while (second < third && nums[second] == nums[second + 1]) {
+                    ++second;
+                }
+                while (second < third && nums[third] == nums[third-1]) {
+                    --third;
+                }
+                ++second;
+                --third;
+            } else if (sum < target) { 
+                ++second;
+            } else {
+                --third;
+            }
+        }
+    }
+
+    return res;
 }
 }
