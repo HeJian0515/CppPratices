@@ -6,6 +6,8 @@
 #include <string>
 #include <unordered_map>
 #include <climits>
+#include <list>
+#include <forward_list>
 using namespace std;
 
 namespace _435Interval {  //! 435. 无重叠区间
@@ -29,6 +31,29 @@ int eraseOverlapIntervals(vector<vector<int>>& intervals) {
     return intervals.size() - count;
 }
 }  // namespace _435Interval
+
+
+namespace _452findMinArrowShots
+{
+int findMinArrowShots(vector<vector<int>>& points)
+{
+    if (points.empty()) return 0;
+    sort(points.begin(), points.end(), 
+        [] (const vector<int>& a, const vector<int>& b){return a[1] < b[1];}
+    );
+
+    int x_end = points[0][1];
+    int delCnt = 0;
+    for (int i = 1; i < points.size(); ++i) {
+        if (x_end >= points[i][0]) {
+            delCnt++;
+        } else {
+            x_end = points[i][1];
+        }
+    }
+    return points.size() - delCnt;
+}
+}
 
 namespace _392SubStr {
 bool isSubsequence(string s, string t) {
@@ -100,6 +125,7 @@ int maxSubArray_1(vector<int>& nums) {
 
 namespace _763partitionLabels{
 //*每次找第一个字母出现的最后位置 再找第二个字母出现的最后位置...
+//* 当遍历到的字符最后位置等于自己的时候，即获得一个划分区间
 vector<int> partitionLabels(string S) {
     unordered_map<char, int> charIndexMap; // 记录字符最后一次出现的位置
     int strLen = S.size();
@@ -219,5 +245,90 @@ int candy_1(vector<int>& ratings)
         }
     }
     return accumulate(num.cbegin(), num.cend(), 0);
+}
+}
+
+
+// 统计[1, ...., 1]两个1之间的0的个数， 该段区间内种花的数量 = (count - 1) / 2;
+namespace _605canPlaceFlowers {
+bool canPlaceFlowers(vector<int>& flowerbed, int n)
+{   
+    int cnt = 0;
+    int prev = -1;
+    int m = flowerbed.size();
+
+    for (int i = 0; i < m; ++i) {
+        if (flowerbed[i] == 1) {
+            if (prev < 0) {
+                cnt += (i / 2); // [0] 的位置为0的情况
+            } else {
+                cnt += (i - prev - 2) / 2;
+            }
+
+            if (cnt >= n) return true;
+
+            prev = i;
+        }
+    }
+
+    // [end] 末尾为0的情况
+    if (prev < 0) {
+        cnt += (m + 1) / 2;
+    } else {
+        cnt += (m - prev - 1) / 2;
+    }
+    return cnt >= n;
+}
+}
+
+
+namespace _406reconstructQueue
+{
+//* 将人从低往高排序，放入第i个人保证其前面有ki个空位置来放身高更高的人
+vector<vector<int>> reconstructQueue(vector<vector<int>>& people) {
+    sort(people.begin(), people.end(), 
+        [] (const vector<int>& u1, const vector<int>& u2){
+            return u1[0]<u2[0] || (u1[0]==u2[0] && u1[1]>u2[1]);
+    });
+
+    int n = people.size();
+    vector<vector<int>> ans(n);
+
+    for (const auto& person : people) {
+        int spaces = person[1] + 1; // 人应该放到队列从左往右第ki+1个空位置处
+        // 将人放到第ki+1个空位置处
+        for (int i = 0; i < n; ++i) {
+            if (ans[i].empty()) {
+                --spaces;
+                if (spaces == 0) {
+                    ans[i] = person;
+                    break;
+                }
+            }
+        }
+    }
+
+    return ans;
+}
+
+// 将人从高到低排序，放入人时，保证其前面有ki个人就行
+vector<vector<int>> reconstructQueue_1(vector<vector<int>>& people) {
+    sort(people.begin(), people.end(),
+        [] (const vector<int>& v1, const vector<int>& v2){
+            return v1[0] > v2[0] || (v1[0] == v2[0] && v1[1] < v2[1]);
+        });
+    
+    // list<vector<int>> lst;
+    forward_list<vector<int>> lst;
+
+    for (const auto& person : people) {
+       if (lst.empty()) {
+           lst.emplace_front(person);
+       } else {
+           lst.insert_after(next(lst.cbegin(), person[1]-1), person);
+       }
+    }
+
+    return vector<vector<int>>(lst.cbegin(), lst.cend());
 }
 }
