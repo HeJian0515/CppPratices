@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 using namespace std;
 
@@ -112,3 +113,150 @@ string minWindow(string s, string t)
 }
 
 }
+
+namespace _567checkInclusion
+{
+// 判断 s2 中是否存在 s1 的排列
+bool checkInclusion(string s1, string s2)
+{
+    unordered_map<char, int> window, needs;
+    for (char c : s1) {
+        ++needs[c];
+    }
+
+    int l = 0, r = 0;
+    int valid = 0;
+    while (r < s2.size())
+    {
+        char c = s2[r];
+        ++r;
+
+        // 进行窗口内数据的一系列更新
+        if (needs.count(c)) {
+           int n = ++window[c];
+           if (n == needs[c]) ++valid;
+        }
+
+        // 当窗口长度r-l等于s1长度时候进入循环，减小窗口的长度
+        if (r - l >= s1.size())
+        {
+            if (valid == needs.size()) return true;
+
+            // 缩小窗口并更新窗口数据
+            char d = s2[l];
+            ++l;
+            if (needs.count(d)) {
+                if (window[d] == needs[d]) {
+                    --valid;
+                }
+                --window[d];
+            }
+        } 
+    }
+    return false;
+}
+}
+
+//* 类似上题
+namespace _438findAnagrams
+{
+vector<int> findAnagrams(string s, string p)
+{
+    unordered_map<char, int> needs, window;
+    for (char c : p) ++needs[c];
+
+    int l = 0, r = 0;
+    int valid = 0;
+    vector<int> ans;
+
+    while (r < s.size())
+    {
+        char c = s[r];
+        ++r;
+
+        if (needs.count(c)) {
+            int n = ++window[c];
+            if (n == needs[c]) ++valid;
+        }
+
+        if (int len = r - l; len == p.size())
+        {
+            if (valid == needs.size()) ans.push_back(l);
+
+            char d = s[l];
+            ++l;
+            if (needs.count(d)) {
+                int n = window[d]--;
+                if (n == needs[d]) {
+                    --valid;
+                }
+            }
+        }
+    }
+
+    return ans;
+}
+}
+
+namespace _3lengthOfLongestSubstring
+{
+int lengthOfLongestSubstring(string s)
+{
+    unordered_set<char> chSet;
+    int l = 0, r = 0;
+    int ans = 0;
+    while (r < s.size())
+    {
+        char c = s[r];
+        ++r;
+
+        if (!chSet.count(c)) {
+            chSet.insert(c);
+            ans = max(ans, r - l);
+        } else {
+            while (chSet.count(c))
+            {
+                char d = s[l];
+                chSet.erase(d);
+                ++l;
+            }
+            chSet.insert(c);
+        }
+    }
+    return ans;
+}
+}
+
+namespace _340lengthOfLongestSubstringkDistinct 
+{
+int lengthOfLongestSubstringKDistinct(string s, int k)
+{
+    int sLen = s.size();
+    int l = 0, r = 0;
+    unordered_map<char, int> chMap; // 记录加入窗口的字符的个数
+    int len = 0;
+    while (r < sLen)
+    {
+        // 窗口右边界不断拓展
+        int c = s[r];
+        ++r;
+        ++chMap[c];
+
+        if (chMap.size() <= k) {
+            len = max(len, r-l); // 满足要求时，更新结果
+        } else {
+            while (chMap.size() > k) // 当字符数大于k时，左边界右移以缩小窗口，使字符个数<=k
+            {
+                char d = s[l];
+                if (--chMap[d] == 0) {
+                    chMap.erase(d);
+                }
+                ++l;
+            }
+        }
+    }
+
+    return len;
+}
+}
+

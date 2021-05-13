@@ -41,7 +41,7 @@ void quickSortOrigin(int *arr, int begin, int end) {
          // 继续排序左区间
         quickSortOrigin(arr, begin, i-1);
         // 继续排序右区间
-         quickSortOrigin(arr, i+1, end);
+        quickSortOrigin(arr, i+1, end);
     }
 }
 
@@ -79,5 +79,61 @@ int findKthLargest(vector<int>& nums, int k) {
     // return quickSelect(nums, 0, nums.size()-1, nums.size()-k);
     nth_element(nums.begin(), nums.end() - k, nums.end());
     return nums[nums.size() - k];
+}
+}
+
+
+// 荷兰国旗问题
+namespace __78sortColors
+{
+void sortColor(vector<int>& nums)
+{
+    // l维护[0, ..., 0)的右边界
+    // r维护(2, ..., 2]的左边界
+    int l = 0, r = nums.size()-1; 
+    int curr = 0;
+
+    while (curr <= r)
+    {   
+        while (curr <= r && nums[curr] == 2) {
+            swap(nums[curr], nums[r]);
+            --r;
+        }
+        if (nums[curr] == 0) {
+            swap(nums[curr], nums[l]);
+            ++l;
+        }
+        ++curr;
+    }
+}
+}
+
+// 摆动数组II
+namespace _324wiggleSort
+{
+void wiggleSort(vector<int>& nums)
+{
+    int n = nums.size();
+    
+    auto midIt = next(nums.begin(), n/2);
+    nth_element(nums.begin(), midIt, nums.end());
+
+    int mid = *midIt;
+
+    #define A(i) nums[(1+2*(i)) % (n|1)]
+
+    int l = 0, k = 0, r = n-1;
+    while (k <= r)
+    {
+        while (k <= r && A(k) < mid) {
+            swap(A(k), A(r));
+            --r;
+        }
+        if (A(k) > mid) {
+            swap(A(k), A(l));
+            ++l;
+        }
+        ++k;
+    }
 }
 }

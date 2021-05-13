@@ -16,6 +16,8 @@
 #include <set>
 #include <vector>
 #include <deque>
+#include <numeric>
+#include <functional>
 using namespace std;
 
 struct TreeNode {
@@ -24,96 +26,6 @@ struct TreeNode {
     TreeNode* right;
     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
 };
-
-namespace _46back {  //! 46. 全排列
-
-class Solution {
-   private:
-    // 路径：记录在track中
-    // 选择列表：nums中不存在track的那些元素
-    // 结束条件：nums中的元素全部都在track中
-    void backtrack(vector<vector<int>>& res, vector<int>& nums, vector<int>& track) {
-        // 触发结束条件
-        if (track.size() == nums.size()) {
-            res.push_back(vector<int>(track));
-            return;
-        }
-
-        for (int i = 0; i < nums.size(); ++i) {
-            // 排除不合法的选择
-            if (std::find(track.begin(), track.end(), nums[i]) != track.end())
-                continue;
-            // 做选择
-            track.push_back(nums[i]);
-            // 进入下一层决策树
-            backtrack(res, nums, track);
-            // 取消选择
-            track.pop_back();
-        }
-    }
-
-   public:
-    vector<vector<int>> permute(vector<int>& nums) {
-        vector<vector<int>> res;
-        vector<int> track;
-
-        backtrack(res, nums, track);
-        return res;
-    }
-};
-}  // namespace _46back
-
-//todo=============================================================================================
-namespace _51back {  //!  N皇后
-class Solution {
-   public:
-    vector<vector<string>> res;
-    bool isValid(vector<string>& board, int row, int col) {
-        int n = board.size();  // 列数
-        // 检查是否有皇后互相冲突
-        for (int i = 0; i < n; ++i) {
-            if (board[i][col] == 'Q')
-                return false;
-        }
-        // 检查右上方是否有皇后冲突
-        for (int i = row - 1, j = col + 1; i >= 0 && j < n; --i, ++j) {
-            if (board[i][j] == 'Q')
-                return false;
-        }
-        // 检查左上方是否有皇后互相冲突
-        for (int i = row - 1, j = col - 1; i >= 0 && j >= 0; --i, --j) {
-            if (board[i][j] == 'Q')
-                return false;
-        }
-        return true;
-    }
-
-    void backtrack(vector<string>& board, int row) {
-        // 触发结束条件
-        if (row == board.size()) {
-            res.push_back(board);
-            return;
-        }
-
-        int n = board.size();
-        for (int col = 0; col < n; ++col) {
-            if (!isValid(board, row, col))
-                continue;
-            // 做选择
-            board[row][col] = 'Q';
-            // 进入下一行决策
-            backtrack(board, row + 1);
-            // 撤销选择
-            board[row][col] = '.';
-        }
-    }
-    vector<vector<string>> solveNQueens(int n) {
-        vector<string> board(n, string(n, '.'));
-        backtrack(board, 0);
-        return res;
-    }
-};
-}  // namespace _51back
 
 //todo=============================================================================================
 namespace _112Tree {  //! 112. 路径总和
@@ -240,42 +152,6 @@ vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
 }
 }  // namespace _39backtrack
 
-//todo===============================================================================================
-namespace _40backtrack {
-
-void backtrack(vector<int>& candidates, vector<bool>& isSelect, vector<vector<int>>& res, vector<int>& trace, int del) {
-    if (del == 0) {
-        res.push_back(trace);
-        return;
-    }
-
-    for (int i = 0; i < candidates.size(); ++i) {
-        if (!isSelect[i]) {
-            //!=========================================================================================================
-            if (del < candidates[i] || (i > 0 && candidates[i - 1] == candidates[i] && !isSelect[i - 1])) continue;
-            if ((trace.size() > 0 && candidates[i] < trace.back())) continue;
-            //!=========================================================================================================
-            isSelect[i] = true;
-            del -= candidates[i];
-            trace.push_back(candidates[i]);
-
-            backtrack(candidates, isSelect, res, trace, del);
-
-            trace.pop_back();
-            del += candidates[i];
-            isSelect[i] = false;
-        }
-    }
-}
-vector<vector<int>> combinationSum2(vector<int>& candidates, int target) {
-    vector<vector<int>> res;
-    vector<int> trace;
-    vector<bool> isSelected(candidates.size(), false);
-    std::sort(candidates.begin(), candidates.end());
-    backtrack(candidates, isSelected, res, trace, target);
-    return res;
-}
-}  // namespace _40backtrack
 
 namespace _216backtrack {
 
@@ -360,9 +236,7 @@ class Solution {
             }
             return;
         }
-        /*
-*
-*/
+
         if (nums[cur] >= last) {
             temp.push_back(nums[cur]);
             dfs(cur + 1, nums[cur], nums);
@@ -547,255 +421,215 @@ vector<string> restoreIpAddresses_1(string s) {
 //* 单词搜索
 namespace _79LC {
 
-static constexpr int directions[][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
-
-// 判断以网格的 (i, j) 位置出发，能否搜索到单词word[k..]
-// word[k..]表示字符串word 从第 k个字符开始的后缀子串
-bool dfs(const vector<vector<char>>& board, string& s, vector<vector<char>>& isVisited, int i, int j, int k) {
-    if (board[i][j] != s[k]) {
-        return false;
-    } else if (k == s.length() - 1) {
-        return true;
+void backtracking(int i, int j, vector<vector<char>>& board, string& word, 
+    bool& find, vector<vector<char>>& visited, int pos)
+{
+    if (i < 0 || i >= board.size() || j < 0 || j >= board[0].size()) {
+        return;
     }
 
-    isVisited[i][j] = true;
-    bool result = false;
-    for (auto& dir : directions) {
-        int newi = i + dir[0];
-        int newj = j + dir[1];
-        // 判断newi和newj是否在board范围内
-        if (newi >= 0 && newi < board.size() && newj >= 0 && newj < board[0].size()) {
-            if (!isVisited[newi][newj]) {
-                bool flag = dfs(board, s, isVisited, newi, newj, k + 1);
-                if (flag) {
-                    result = true;
-                    break;
-                }
-            }
-        }
+    if (visited[i][j] || find || board[i][j] != word[pos]) {
+        return;
     }
-    isVisited[i][j] = false;
-    return result;
+
+    if (pos == word.size()-1) {
+        find = true;
+        return;
+    }
+
+    visited[i][j] = true;
+
+    backtracking(i+1, j, board, word, find, visited, pos+1);
+    backtracking(i-1, j, board, word, find, visited, pos+1);
+    backtracking(i, j+1, board, word, find, visited, pos+1);
+    backtracking(i, j-1, board, word, find, visited, pos+1);
+
+    visited[i][j] = false;
 }
+
 bool exist(vector<vector<char>>& board, string word) {
-    int h = board.size(), w = board[0].size();
-    vector<vector<char>> isVisited(h, vector<char>(w, false));
-    for (int i = 0; i < h; ++i) {
-        for (int j = 0; j < w; ++j) {
-            bool flag = dfs(board, word, isVisited, i, j, 0);
-            if (flag) return true;
+    if (board.empty()) return false;
+    int m = board.size(), n = board[0].size();
+    vector<vector<char>> visited(m, vector<char>(n, false));
+    bool find = false;
+    
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            backtracking(i, j, board, word, find, visited, 0);
         }
     }
-    return false;
+    return find;
 }
 }  // namespace _79LC
 
-//*二叉树的所有路径
-namespace _257LC {
+//!==============================
+namespace _47PermuteUnique{
 
-// 根据路径构建路径字符串
-string buildPath(const vector<int>& path) {
-    string str;  // 编译器应该会优化
-    for (int i = 0; i < path.size(); ++i) {
-        str.append(to_string(path[i]));
-        if (i != path.size() - 1) {
-            str.append("->");
-        }
-    }
-    return str;
+
 }
 
-// 回溯法
-void dfs(TreeNode* root, vector<int>& path, vector<string>& ans) {
-    if (root != nullptr) {
-        path.push_back(root->val);
-        // root 是叶子节点
-        if (root->left == nullptr && root->right == nullptr) {
-            ans.push_back(buildPath(path));
-        } else {
-            dfs(root->left, path, ans);
-            dfs(root->right, path, ans);
-        }
+// 组合
+namespace _77Combine {
+vector<vector<int>> ans;
+
+void backtrack(int n, int k, int start, vector<int>& path)
+{
+    if (path.size() == k) {
+        ans.push_back(path);
+        return;
+    }
+
+    for (int i = start; i <= n; ++i)
+    {
+        path.push_back(i);
+        backtrack(n, k, i+1, path);
         path.pop_back();
     }
 }
 
-vector<string> binaryTreePaths(TreeNode* root) {
-    vector<string> ans;
-    if (root == nullptr) return ans;
-
-    vector<int> path;
-    dfs(root, path, ans);
+vector<vector<int>> combine(int n, int k)
+{   
+    vector<int> path; path.reserve(k);
+    backtrack(n, k, 1, path);
     return ans;
 }
-}  // namespace _257LC
+}
 
-//* 全排列
-namespace _46LC {
+namespace _40backtrack {
+vector<vector<int>> ans;
 
-// 表示从左往右填到第 first 个位置，当前排列为 output。
-// 我们可以将题目给定的 n 个数的数组 nums[] 划分成左右两个部分，左边的表示已经填过的数，右边表示待填的数，我们在递归搜索的时候只要动态维护这个数组即可。
-void dfs(vector<vector<int>>& res, vector<int>& output, int first, int len ) {
-    if (first == len) {
-        res.emplace_back(output);
+void backtrack(vector<int>& candidates, int index, vector<int>& path, int target)
+{
+    if (target == 0) {
+        ans.push_back(path);
         return;
     }
-    for (int i = first; i < len; ++i) {
-        // 动态维护数组
-        std::swap(output[i], output[first]);
-        dfs(res, output, first+1, len );
-        std::swap(output[i], output[first]);
+
+    for (int i = index; i < candidates.size(); ++i) {
+        if (candidates[i] > target) break;
+        if (i > index && candidates[i-1] == candidates[i]) continue;
+
+        path.push_back(candidates[i]);
+        backtrack(candidates, i+1, path, target - candidates[i]);
+        path.pop_back();
     }
 }
+vector<vector<int>> combinationSum2(vector<int>& candidates, int target) {
+    vector<int> path;
+    sort(candidates.begin(), candidates.end());
+    backtrack(candidates, 0, path, target);
+    return ans;
+}
+}  // namespace _40backtrack
 
-vector<vector<int>> permute(vector<int>& nums) {
-    vector<vector<int>> res;
-    dfs(res, nums, 0, (int)nums.size());
-    return res;
+//* 子集
+namespace _78subsets
+{
+vector<vector<int>> ans;
+void backtrack(const vector<int>& nums, vector<int>& path, int start)
+{
+    ans.push_back(path);
+
+    for (int i = start; i < nums.size(); ++i) {
+        path.push_back(nums[i]);
+        backtrack(nums, path, i+1);
+        path.pop_back();
+    }
+}
+vector<vector<int>> subsets(vector<int>& nums)
+{
+    vector<int> path;
+    backtrack(nums, path, 0);
+    return ans;
+}
 }
 
-void backtracking(vector<int>& path, vector<vector<int>>& res, vector<bool>& visited, vector<int>& nums) {
-   if (path.size() == nums.size()) {
-       res.emplace_back(path);
+//* n皇后问题
+namespace _51solveNQueens
+{
+vector<string> generateBoard(vector<int>& queens, int n)
+{
+    vector<string> board(n, string(n, '.'));
+    for (int i = 0;  i < n; ++i) {
+        board[i][queens[i]] = 'Q';
+    }
+    return board;
+}
+void backtrack(vector<vector<string>>& ans, vector<int>& queens, 
+                int n, int row, unordered_set<int>& col,
+                unordered_set<int>& ddiag, unordered_set<int>& udiag)
+{
+   if (row == n) {
+       ans.push_back(generateBoard(queens, n));
        return;
    } 
-   for (int i = 0; i < visited.size(); ++i) {
-       if (visited[i]) continue; // 如果
-       visited[i] = true;
-       path.emplace_back(nums[i]);
-       backtracking(path, res, visited, nums);
-       path.pop_back();
-       visited[i] = false;
-   }
-}
 
-vector<vector<int>> permute_1(vector<int>& nums) {
-    vector<vector<int>> res;
-    vector<int> path;
-    vector<bool> hasVisited(nums.size());
-    backtracking(path, res, hasVisited, nums);
-    return res;
-}
-}  // namespace _46LC
+    for (int i = 0; i < n; ++i) { 
+        if (col.count(i)) continue; // 同列已经有皇后
 
-namespace _47PermuteUnique{
+        int d = row - i;            
+        if (ddiag.count(d)) continue; // 从左上角到右下角的对角线上有皇后
 
-set<vector<int>> resSet;
-unordered_set<int> selectedIndex;
-void backtrack(vector<int>& nums, vector<int>& track) {
-    if (track.size() == nums.size()) {
-        resSet.emplace(track);
-        return;
-    }
-    for (int i = 0;  i < nums.size(); ++i) {
-        if (selectedIndex.count(i)) continue; // 已经选择过
-        // 选择
-        track.emplace_back(nums[i]);
-        selectedIndex.emplace(i);
+        int u = row + i;
+        if (udiag.count(u)) continue; // 从左下角到右上角的对角线上有皇后
 
-        backtrack(nums, track);
+        queens[row] = i;
+        col.insert(i);
+        ddiag.insert(d);
+        udiag.insert(u);
 
-        selectedIndex.erase(i);
-        track.pop_back();
-    }
+        backtrack(ans, queens, n, row+1, col, ddiag, udiag);
 
-}
-
-vector<vector<int>> permuteUnique(vector<int>& nums) {
-    resSet.clear();
-    selectedIndex.clear();
-    vector<int> track;
-    backtrack(nums, track);
-    return vector<vector<int>>(resSet.begin(), resSet.end());
-}
-//*====================================================================
-vector<vector<int>> res;
-vector<bool> selectIndex;
-
-void backtrack_1(vector<int>& nums, vector<int>& track) {
-    if (nums.size() == track.size()) res.emplace_back(track);
-    else 
-    {
-        for (int i = 0; i < nums.size(); ++i) {
-            if (false == selectIndex[i]) {
-                if (i > 0 && nums[i] == nums[i-1] &&  false == selectIndex[i-1]) {
-                    continue; // 去重
-                }
-                track.emplace_back(nums[i]);
-                selectIndex[i] = true;
-
-                backtrack_1(nums, track);
-
-                selectIndex[i] = false;
-                track.pop_back();
-            }
-        }
+        queens[row] = -1;
+        col.erase(i);
+        ddiag.erase(d);
+        udiag.erase(u);
     }
 }
 
-vector<vector<int>> permuteUnique_1(vector<int>& nums) {
-    if (nums.empty()) return{};
-    else if (nums.size() == 1) return {{nums[0]}};
-    else 
-    {
-        res.clear();
-        selectIndex.clear();
-        selectIndex = vector<bool>(nums.size(), false);
-
-        vector<int> track;
-        std::sort(nums.begin(), nums.end());
-        backtrack_1(nums, track);
-
-        return res;
-    }
-}
-
-}
-
-namespace _77Combine {
-
-// 函数的意义是:从[start, n]中选出 k个递增的数 
-// track 表示先前选的的数
-void backtracking(vector<vector<int>>& res, vector<int>& track, int start, int k, const int n) {
-    if (0 == k) {
-        res.emplace_back(track);
-        return;
-    }
-    // track 长度加上区间[start, n]的长度小于k,不可能构造出长度为k的track  n -start + 1 >= k
-    for (int i = start; i <= n - k + 1; ++i) {
-        track.emplace_back(i);
-        backtracking(res, track, i + 1, k - 1, n);
-        track.pop_back();
-    }
-}
-
-vector<vector<int>> combine(int n, int k) {
-    vector<vector<int>> res;
-    vector<int> track;
-    backtracking(res, track, 1, k, n);
-    return res;
-}
-
-//*====================================================================================================
-vector<int> path;
-vector<vector<int>> ans;
-void dfs(int cur, int n, int k) {
-    if (path.size() + (n - cur + 1) < k) { return;}
-
-    if (path.size() == k) {
-        ans.emplace_back(path);
-        return;
-    }
-
-    // 考虑选择当前位置
-    path.push_back(cur);
-    dfs(cur + 1, n, k);
-    path.pop_back();
-    // 考虑不选择当前位置
-    dfs(cur + 1, n, k);
-}
-vector<vector<int>> combine_1(int n, int k) {
-    dfs(1, n, k);
+vector<vector<string>> solveNQueens(int n)
+{
+    vector<vector<string>> ans;
+    vector<int> queens(n, -1);
+    unordered_set<int> col, ddiag, udiag;
+    backtrack(ans, queens, n, 0, col, ddiag, udiag);
+    
     return ans;
 }
+}
+
+
+//! 划分子集
+namespace _698canPartitionKSubsets
+{
+#if 1
+bool canPartitionKSubsets(vector<int>& nums, int k)
+{
+    if (k == 1) return true;
+    int sum = accumulate(nums.cbegin(), nums.cend(), 0);
+    if (sum % k != 0) return false;
+
+    int target = sum/k, n = nums.size();
+    vector<int> bucket(k);
+    sort(nums.begin(), nums.end(), greater<>());
+
+    // 把第i个数放入桶中
+    function<bool(int)> dfs = [&](int i) -> bool {
+        if (i == n) return true;
+        for (int j = 0; j < k; ++j)
+        {
+            if (nums[i] + bucket[j] <= target) {
+                bucket[j] += nums[i];
+                if (dfs(i+1)) return true;
+                bucket[j] -= nums[i];
+            }
+
+            if (bucket[j] == 0) break;  // 后面的桶也是空桶，没有区别
+        }
+        return false;
+    };
+
+    return dfs(0);
+}
+#endif
 }

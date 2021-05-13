@@ -37,40 +37,6 @@ int uniquePathsWithObstacles(vector<vector<int>>& obstacleGrid) {
 
 }  // namespace _63dp
 
-namespace _1143lcs {  //! 1143. 最长公共子序列
-
-int longestCommonSubsequence(string text1, string text2) {
-    vector<vector<int>> dp(text1.size() + 1, vector<int>(text2.size() + 1, 0));
-
-    for (int i = 1; i < text1.size() + 1; ++i) {
-        for (int j = 1; j < text2.size() + 1; ++j) {
-            if (text1[i - 1] == text2[j - 1])
-                dp[i][j] = dp[i - 1][j - 1] + 1;
-            else
-                dp[i][j] = std::max(dp[i - 1][j], dp[i][j - 1]);
-        }
-    }
-    return dp[text1.size()][text2.size()];
-}
-}  // namespace _1143lcs
-
-namespace _200lis {  //! 300. 最长上升子序列
-
-int lengthOfLIS(vector<int>& nums) {
-    vector<int> dp(nums.size(), 1);
-    for (int i = 0; i < nums.size(); ++i) {
-        for (int j = 0; j < i; ++j) {
-            if (nums[j] < nums[i])
-                dp[i] = std::max(dp[i], dp[j] + 1);
-        }
-    }
-    int res = 0;
-    for (int i = 0; i < dp.size(); ++i) {
-        res = std::max(res, dp[i]);
-    }
-    return res;
-}
-}  // namespace _200lis
 
 namespace _120minTri {  //! 120. 三角形最小路径和
 int minimumTotal(vector<vector<int>>& triangle) {
@@ -709,3 +675,27 @@ bool isMatch_1(const string& s, const string& p)
 
 //! ===============================高楼扔鸡蛋=====================================
 
+namespace _64minPathSum
+{
+int minPathSum(vector<vector<int>>& grid)
+{
+    int m = grid.size(), n = grid[0].size();
+    // 从左上角到(i, j)的路径之和
+    vector<vector<int>> dp(m, vector<int>(n, 0));
+    dp[0][0] = grid[0][0];
+
+    for (int i = 1; i < n; ++i) {
+        dp[0][i] = dp[0][i-1] + grid[0][i];
+    }
+    for (int i = 1; i < m; ++i) {
+        dp[i][0] = dp[i-1][0] + grid[i][0];
+    }
+
+    for (int i = 1; i < m; ++i) {
+        for (int j = 1; j < n; ++j) {
+            dp[i][j] = min(dp[i-1][j], dp[i][j-1]) + grid[i][j];
+        }
+    }
+    return dp[m-1][n-1];
+}
+}

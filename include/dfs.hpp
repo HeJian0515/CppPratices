@@ -166,67 +166,65 @@ int minDepth(TreeNode* root) {
 }  // namespace _111BiTree
 
 //*695. 岛屿的最大面积
-namespace _695LC {
+namespace _695maxAreaOfIsland {
 
-// 上下左右四个方向
-constexpr static int directions[][2] = {{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
-int col, row;
-vector<vector<int>>* grids;
+// 从(x, y) 位置位置开始深度遍历
+int dfs(vector<vector<int>>& grid, int x, int y, int m, int n)
+{
+    grid[x][y] = 0;
+    int area = 1;
 
-// 判断（r,c)是否在范围内
-inline bool inGrid(int r, int c) {
-    return r >= 0 && r < row && c >= 0 && c < col;
+    if (x<m-1 && grid[x+1][y]==1) area += dfs(grid, x+1, y, m, n); // 向下
+    if (x>0 && grid[x-1][y]==1) area += dfs(grid, x-1, y, m, n); // 向上
+
+    if (y<n-1 && grid[x][y+1]==1) area += dfs(grid, x, y+1, m, n); // 向右
+    if (y>0 && grid[x][y-1]==1) area += dfs(grid, x, y-1, m, n); // 向左
+
+    return area;
 }
 
-int dfs(int r, int c) {
-    if (!inGrid(r, c) || (*grids)[r][c] == 0) return 0;
-    (*grids)[r][c] = 0;
-    int ans = 1;
-    for (int i = 0; i < 4; ++i) {
-        ans += dfs(r + directions[i][0], c + directions[i][1]);
-    }
-    return ans;
-}
-
-int maxAreaOfIsland(vector<vector<int>>& grid) {
-    grids = &grid;
-    row = grid.size();
-    col = grid[0].size();
+int maxAreaOfIsland(vector<vector<int>>& grid)
+{
+    int m = grid.size(), n = grid[0].size();
 
     int maxArea = 0;
-    for (int i = 0; i < row; ++i) {
-        for (int j = 0; j < col; ++j) {
-            maxArea = std::max(maxArea, dfs(i, j));
+    for (int i = 0; i < m; ++i)
+    {
+        for (int j = 0; j < n; ++j)
+        {
+            if (grid[i][j] == 1) {
+                maxArea = max(maxArea, dfs(grid, i, j, m, n));
+            }
         }
     }
     return maxArea;
 }
+
 }  // namespace _695LC
 
 //* 朋友圈
 namespace _547LC {
 
-void dfs(vector<vector<int>>& m, vector<int>& visited, int i) {
+void dfs(vector<vector<int>>& m, vector<bool>& visited, int i) {
+    visited[i] = true;
     for (int j = 0; j < m.size(); ++j) {
-        if (m[i][j] == 1 && visited[j] == 0) {
-            visited[j] = 1;
+        if (m[i][j] == 1 && visited[j] == false) {
             dfs(m, visited, j);
         }
     }
 }
 
-int findCircleNum(vector<vector<int>>& M) {
-    vector<int> visited(M.size(), 0);
-    int count = 0;
-
-    for (int i = 0; i < M.size(); ++i) {
-        if (visited[i] == 0) {
-            dfs(M, visited, i);
-            ++count;
+int findCircleNum(vector<vector<int>>& isConnected) {
+    int n = isConnected.size();
+    int cnt = 0;
+    vector<bool> visited(n, false);
+    for (int i = 0; i < n; ++i){
+        if (visited[i] == false) {
+            dfs(isConnected, visited, i);
+            ++cnt;
         }
     }
-
-    return count;
+    return cnt;
 }
 
 }  // namespace _547LC
@@ -275,52 +273,41 @@ void solve(vector<vector<char>>& board) {
 
 //*417太平洋大西洋水流问题
 namespace _417LC {
-int row, col;
-vector<vector<int>>* mat;
-constexpr static int direction[][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+vector<vector<char>> P, A;
+vector<vector<int>> ans;
+int m, n;
 
-void dfs(int r, int c, vector<vector<char>>& canReach) {
-    if (canReach[r][c]) return;
-    canReach[r][c] = true;
-    for (auto& d : direction) {
-        int nextR = d[0] + r;
-        int nextC = d[1] + c;
-        if (nextR < 0 || nextR >= row || nextC < 0 || nextC >= col || (*mat)[r][c] > (*mat)[nextR][nextC]) {
-            continue;
-        }
-        //! 逆流而上
-        dfs(nextR, nextC, canReach);
+vector<vector<int>> pacificAtlantic(vector<vector<int>>& heights)
+{
+    m = heights.size();
+    n = heights[0].size();
+    P = A = vector<vector<char>>(m, vector<char>(n, 0));
+
+    // 左右两边加上下两边出发
+    for (int i = 0; i < m; ++i) {
+        dfs(heights, P, i, 0); // 左边
+        dfs(heights, A, i, n-1); // 右边
     }
+    for (int i = 0; i < n; ++i) {
+        dfs(heights, P, 0, i);
+        dfs(heights, A, m-1, i);
+    }
+    return ans;
 }
-vector<vector<int>> pacificAtlantic(vector<vector<int>>& matrix) {
-    vector<vector<int>> ret;
-    if (matrix.size() < 1) return ret;
 
-    row = matrix.size();
-    col = matrix[0].size();
-    mat = &matrix;
+void dfs(vector<vector<int>>& M, vector<vector<char>>& visited, int i, int j)
+{
+    if (visited[i][j]) return;
+    visited[i][j] = 1;
 
-    vector<vector<char>> canReachP(row, vector<char>(col, false));
-    vector<vector<char>> canReachA(row, vector<char>(col, false));
+    if (P[i][j] && A[i][j]) ans.push_back({i, j});
 
-    for (int i = 0; i < row; ++i) {
-        dfs(i, 0, canReachP); // 从左边界开始能到达太平洋
-        dfs(i, col-1, canReachA); // 从右边界开始到达大西洋
-    }
-
-    for (int i = 1; i < col-1; ++i) {
-        dfs(0, i, canReachP); // 从上边界开始到达太平洋
-        dfs(row-1, i, canReachA); // 从下边界开始到达大西洋
-    }
-
-    for (int i = 0; i < row; ++i) {
-        for (int j = 0; j < col; ++j) {
-            if (canReachP[i][j] && canReachA[i][j]) {
-                ret.push_back({i, j});
-            }
-        }
-    }
-    return ret;
+    //上下左右深搜
+    if(i-1 >= 0 && M[i-1][j] >= M[i][j]) dfs(M, visited, i-1, j);
+    if(i+1 < m && M[i+1][j] >= M[i][j]) dfs(M, visited, i+1, j); 
+    if(j-1 >= 0 && M[i][j-1] >= M[i][j]) dfs(M, visited, i, j-1);
+    if(j+1 < n && M[i][j+1] >= M[i][j]) dfs(M, visited, i, j+1); 
 }
+
 }  // namespace _417LC
 

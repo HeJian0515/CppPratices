@@ -5,8 +5,48 @@
 #include <queue>
 #include <string>
 #include <unordered_set>
+#include <unordered_map>
 #include <utility>
 using namespace std;
+
+
+//! BFS算法框架 计算从起点 start 到终点 target 的最近距离
+#if 0
+
+int BFS(Node* start , Node* target)
+{
+    queue<Node*> q;
+    set<Node*> visited; // 避免走回头路
+
+    q.psuh(start);  // 将起点加入队列
+    visited.insert(start);
+    int step = 0; // 记录扩散的步数
+
+    while ( q not empty) {
+        int sz = q.size();
+        // 将当前队列中的所有节点向四周扩散
+        for (int i = 0; i < sz; ++i) {
+            Node* cur = q.top(); q.pop();
+
+            //* 判断是否到达终点===============================================
+            if (cur is target) {
+                return step;
+            }
+
+            // 将cur 的相邻节点加入队列
+            for (Node* x : cur.adj()) {
+                if (x not in visited) {
+                    q.push(x);
+                    visited.insert(x);
+                }
+            }
+        }
+        //* 更新步数=================================================
+        ++step;
+    }
+}
+
+#endif
 
 struct TreeNode {
     int val;
@@ -61,76 +101,47 @@ string minusOne(string s, int j) {
     return s;
 }
 
-// BFS
-void BFS(string target) {
+// 单向BFS
+int openLock_1(vector<string>& deadends, string target)
+{
+    unordered_set<string> deadSet;
+    for (string& s : deadends) deadSet.insert(s);
+    // 记录已经穷举过的代码, 防止走回头路
+    unordered_set<string> visited;
     queue<string> q;
-    q.push("0000");
 
-    while (!q.empty()) {
+    int step = 0;
+    q.push("0000");
+    visited.insert(q.front());
+
+    while (!q.empty())
+    {
         int sz = q.size();
         // 将当前队列中的所有节点向周围扩散
-        for (int i = 0; i < sz; ++i) {
-            string cur = q.front();
-            q.pop();
-            // 判断是否到达终点
-            cout << cur << endl;
+        while (sz--) {
+            string cur = q.front(); q.pop();
+            if (deadSet.count(cur)) continue;
+            if (cur == target) return step;
 
-            // 将相邻节点加入队列
+            // 将一个节点的未遍历相邻节点加入队列
             for (int j = 0; j < 4; ++j) {
                 string up = plusOne(cur, j);
+                if (!visited.count(up)) {
+                    q.push(up);
+                    visited.insert(up);
+                } 
                 string down = minusOne(cur, j);
-                q.push(up);
-                q.push(down);
+                if (!visited.count(down)) {
+                    q.push(down);
+                    visited.insert(down);
+                }
             }
         }
-        // 增加步数
+        ++step;
     }
-    return;
+    return -1;
 }
-/*
-     int openLock(vector<string>& deadends, string target) {
-         // 记录需要跳过的死亡密码
-         unordered_set<string> deads;
-         for (string s : deadends) deads.insert(s);
 
-         // 记录已穷举的密码，防止走回头路
-         unordered_set<string> visited;
-         queue<string> q;
-         // 从起点开始启动广度优先搜索
-         int step = 0;
-         q.push("0000");
-         visited.insert("0000");
-
-         while (!q.empty()) {
-             int sz = q.size();
-             // 将当前队列中的所有节点向周围扩散 一层
-             for (int i = 0; i < sz; ++i) {
-                 string cur = q.front();
-                 q.pop();
-
-                 // 判断是否到达终点
-                 if (deads.find(cur) != deads.end()) continue;
-                 if (cur == target) return step;
-
-                 // 将一个节点的未遍历的相邻节点加入队列
-                 for (int j = 0; j < 4; ++j) {
-                     string up = plusOne(cur, j);
-                     if (visited.find(up) == visited.end()) {
-                         q.push(up);
-                         visited.insert(up);
-                     }
-                     string down = minusOne(cur, j); 
-                     if (visited.find(down) == visited.end()) {
-                        q.push(down);
-                        visited.insert(down);
-                     } 
-                 }
-             }
-             ++step;
-         }
-         return -1;
-     }
-     */
 
 // 双向BFS
 int openLock(vector<string>& deadends, string target) {
@@ -149,9 +160,8 @@ int openLock(vector<string>& deadends, string target) {
         // 哈希集合在遍历的过程中不用修改，用 temp 存储
         unordered_set<string> temp;  // 将下一层的节点放入temp中
 
-        // 将q1中的所有节点向周围扩散
+        // 访问当前一层的节点，并将下一层节点加入
         for (string cur : q1) {
-            // 判断是否到达终点
             if (deads.find(cur) != deads.end()) continue;
             if (q2.find(cur) != q2.end()) return step;
             visited.insert(cur);
@@ -361,47 +371,193 @@ int ladderLength(string beginWord, string endWord, vector<string>& wordList) {
     return 0;
 }
 
-int ladderLength(string beginWord, string endWord, vector<string>& wordList) {
-    //!记录所有节点
-    unordered_set<string> wordDict(wordList.cbegin(), wordList.cend());
-    if (!wordDict.count(endWord)) return 0; 
+}  // namespace _127LC
 
-    unordered_set<string> beginSet{beginWord};
-    unordered_set<string> endSet{endWord};
+//! 单词接龙II
+namespace _126findLadders
+{
 
-    int step = 1;
-    while (!beginSet.empty()) {
-        unordered_set<string> next; // 前面入队节点的下一层子节点
-        ++step;
-        for (auto& s: beginSet) { // 删除已经访问过的上一层节点
-            wordDict.erase(s);
-        }
+void backtrack(const string& src, const string& dst, unordered_map<string, vector<string>>& next,
+    vector<string>& path, vector<vector<string>>& ans)
+{
+    if (src == dst) {
+        ans.push_back(path);
+    }
+    for (const auto& s : next[src]) {
+        path.push_back(s);
+        backtrack(s, dst, next, path, ans);
+        path.pop_back();
+    }
+}
 
-        for (auto& s: beginSet) {
-            for (int i = 0; i < s.size(); ++i) {
-                string str(s);
-                for (char c = 'a'; c <= 'z'; ++c) {
-                    str[i] = c;//! 只将上一层节点字符串改变一个字符
-                    //! 判断下一层是否有 上一层字符串 只改变一个字符 的字符串
-                    if (!wordDict.count(str)) {
-                        continue;
+vector<vector<string>> findLadders(string beginWord, string endWord, vector<string>& wordList) 
+{   
+    vector<vector<string>> ans;
+    unordered_set<string> dict(wordList.cbegin(), wordList.cend());
+    if (!dict.count(endWord)) return ans;
+
+    dict.erase(beginWord);
+    dict.erase(endWord);
+    unordered_set<string> q1{beginWord}, q2{endWord};
+    unordered_map<string, vector<string>> next;
+    bool reversed = false, found = false;
+
+    while (!q1.empty())
+    {
+        unordered_set<string> q;
+        for (const auto& w : q1)
+        {
+            string s = w;
+            for (size_t i = 0; i < s.size(); ++i)
+            {
+                char ch = s[i];
+                for (int j = 0; j < 26; ++j) 
+                {
+                    s[i] = j + 'a';
+                    if (q2.count(s)) {
+                        reversed ? next[s].push_back(w) : next[w].push_back(s);
+                        found = true;
                     }
-                    if (endSet.count(str)) {
-                        return step;
+                    if (dict.count(s)) {
+                        reversed ? next[s].push_back(w) : next[w].push_back(s);
+                        q.insert(s);
                     }
-                    next.insert(str);//下一层要访问的节点入队
                 }
+                s[i] = ch;
             }
         }
-        //始终保持路径短的一侧开始遍历
-        if (next.size() < endSet.size()) {
-            beginSet = next;
+        
+        if (found) break;
+
+        for (const auto& s : q) dict.erase(s);
+
+        if (q.size() <= q2.size()) {
+            q1 = q;
         } else {
-            beginSet = endSet;
-            endSet = next;
+            reversed = !reversed;
+            q1 = q2;
+            q2 = q;
+        }
+    }
+
+   if (found) {
+       vector<string> path{beginWord};
+       backtrack(beginWord, endWord, next, path, ans);
+   }
+   return ans;
+
+}
+}
+
+//最短的桥
+namespace _934shortestBridge
+{
+
+void dfs(int i, int j, vector<vector<int>>& A, queue<pair<int, int>>& points, int m, int n) {
+    if (i < 0 || j < 0 || i >=m || j >= n || A[i][j] == 2) {
+        return;
+    }
+
+    if (A[i][j] == 0) {
+        points.push({i, j});
+        return;
+    }
+
+    A[i][j] = 2;
+
+    dfs(i-1, j, A, points, m, n);
+    dfs(i+1, j, A, points, m, n);
+    dfs(i, j+1, A, points, m, n);
+    dfs(i, j-1, A, points, m, n);
+}   
+
+int shortestBridge(vector<vector<int>>& A)
+{
+    int m = A.size(), n = A[0].size();
+    queue<pair<int, int>> points;
+
+    // 找到第一个岛屿，并把岛屿周围的水域(0)加入队列中，作为bfs中的第一层
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            if (A[i][j] == 1) {
+                dfs(i, j, A, points, m, n);
+                goto brk;
+            }
+        }
+    }
+    brk:
+
+    // 从第一层水域出发,bfs直到遇到第二个岛屿,层数即为桥的长度
+    int x, y;
+    int level = 0;
+    int dir[][2]= {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    while(!points.empty())
+    {
+        ++level;
+        int sz = points.size();
+        while(sz--)
+        {
+            auto [i, j] = points.front();
+            points.pop();
+            for (int k = 0; k < 4; ++k)
+            {
+                x = i+dir[k][0], y = j+dir[k][1];
+                if (x>=0 && y>=0 && x<m && y<n) {
+                    if (A[x][y] == 2) continue;
+                    else if (A[x][y] == 1) return level;
+                    else {
+                        points.push({x, y});
+                        A[x][y]=2;
+                    }
+                }
+            }
         }
     }
     return 0;
 }
+}
 
-}  // namespace _127LC
+// 被围绕的区域
+namespace _130solve
+{
+
+void fillEdge(int i, int j, vector<vector<char>>& board, int m, int n)
+{
+    board[i][j] = 'Y';
+
+    if (i+1 < m && board[i+1][j] == 'O') fillEdge(i+1, j, board, m, n);
+    if (i-1 >= 0 && board[i-1][j] == 'O') fillEdge(i-1, j, board, m, n);
+    if (j+1 < n && board[i][j+1] == 'O') fillEdge(i, j+1, board, m, n);
+    if (j-1 >= 0 && board[i][j-1] == 'O') fillEdge(i, j-1, board, m, n);
+}
+
+void solve(vector<vector<char>>& board)
+{
+    int m = board.size(), n = board[0].size();
+
+    // 从边缘的'O'开始，进行dfs,将与它相连的'O'全部改为'Y'
+    for (int i = 0; i < n; ++i) {
+        if (board[0][i] == 'O') fillEdge(0, i, board, m, n);
+        if (board[m-1][i] == 'O') fillEdge(m-1, i, board, m, n);
+    }
+    for (int i = 1; i < m -1; ++i) {
+        if (board[i][0] == 'O') fillEdge(i, 0, board, m, n);
+        if (board[i][n-1] == 'O') fillEdge(i, n-1, board, m, n);
+    }
+
+    // 将剩下的'O'全部改为'X'
+    for (int i = 1; i < m-1; ++i) {
+        for (int j = 1; j < n-1; ++j) {
+            if (board[i][j] == 'O') board[i][j] = 'X';
+        }
+    }
+
+    // 将改为'Y'的'O'复原为'O';
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            if (board[i][j] == 'Y') board[i][j] = 'O';
+        }
+    }
+    
+}
+}
