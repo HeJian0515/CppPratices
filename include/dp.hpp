@@ -76,22 +76,6 @@ int minimumTotal2(vector<vector<int>>& triangle) {
 }
 }  // namespace _120minTri
 
-namespace _279Square {  //! 279. 完全平方数
-int numSquares(int n) {
-       vector<int> dp(n + 1, n);
-        dp[0] = 0;
-        dp[1] = 1;
-    for (int i = 1; i <= n; ++i) {
-        int max = static_cast<int>(std::sqrt(i));
-        for (int j = 1; j <= max; ++j) {
-            dp[i] = std::min(dp[i], dp[i-j*j]);
-        }
-        dp[i]+=1;
-    }
-    return dp[n];
-}
-}  // namespace _279Square
-
 //!==================矩阵路径===============
 namespace _64minPathSum 
 {
@@ -179,7 +163,7 @@ int numberOfArithmeticSlices(vector<int>& nums) {
 }
 }
 
-//!=====================分割整数=============================
+//!=====================分割类型=============================
 //* 分割整数的最大乘积
 namespace _343integerBreak
 {
@@ -187,11 +171,9 @@ int integerBreak(int n) {
     // dp[i] 表示将正整数 i 拆分成至少两个正整数的和之后，这些正整数的最大乘积。
     vector<int> dp(n+1, 0); 
     for (int i = 2; i <= n; ++i) {
-        int curMax = 0;
         for (int j = 1; j < i; ++j) {
-            curMax = std::max({curMax, j*(i-j), j * dp[i-j]});
+            dp[i] = std::max({dp[i], j*(i-j), j * dp[i-j]});
         }
-        dp[i] = curMax;
     }
     return dp[n];
 }
@@ -222,25 +204,45 @@ int numDecodings(string s) {
     vector<int> dp(n+1, 0);
 
     dp[0] = 1;
-    dp[1] = (s[0] == '0' ? 0 : 1);
-
+    dp[1] = 1;
+    
     for (int i = 1; i < n; ++i) {
-        if (s[i-1] == '1' || s[i-1] == '2' &&  s[i] <'7') {
+        if (s[i-1] == '1' || (s[i-1] == '2' && s[i] < '7')) {
             // 如果是20、10
             if (s[i] == '0') dp[i+1] = dp[i-1];
-            // 如果是11-19、21-26
-            else dp[i+1] = dp[i] + dp[i-1];
+            else { // 11--19 21-26
+                dp[i+1] = dp[i] + dp[i-1];
+            }
         } else if (s[i] == '0') {
             return 0;
         } else {
-            //i-1和i无法构成一个字母
+            // i-1和i无法构成一个字母
             dp[i+1] = dp[i];
+        }
+    }
+
+    return dp[n];
+}
+}
+
+namespace _139workBreak 
+{
+bool wordBreak(string s, vector<string>& wordDict)
+{
+    int n = s.length();
+    vector<char> dp(n+1, false);
+    dp[0] = true;
+    for (int  i = 1; i <= n; ++i) {
+        for (const string& word : wordDict) {
+            int len = word.length();
+            if (i >= len && s.substr(i-len, len) == word) {
+                dp[i] = dp[i] || dp[i-len];
+            }
         }
     }
     return dp[n];
 }
 }
-
 
 //!=================最长递增子序列===========================
 namespace _300lengthOfLIS
@@ -260,6 +262,58 @@ int lengthOfLIS(vector<int>& nums)
    }
     return *std::max_element(dp.cbegin(), dp.cend());
 }
+
+int lengthOfLIS_1(vector<int>& nums)
+{
+    int len = 1, n = nums.size();
+    if (n == 0) return 0;
+
+    //! d[i] 长度为i的序列的最末尾元素的最小值
+    vector<int> d(n+1, 0);
+    d[len] = nums[0];
+    //! 算法思想尽量保证长度为i的子序列末尾元素尽量小
+    //!  如果nums[i] > d[len] 这直接加入d数组末尾 len = len+1, d[len] = nums[i]
+    //! 否则在d数组中二分查找，找到第一个比nums[i]小的数d[k],并更新d[k+1] = nums[i]
+    for (int i = 1; i < n; ++i) {
+        if (nums[i] > d[len]) {
+            d[++len] = nums[i];
+        } else {
+            // 如果找不到说明所有的数都比 nums[i] 大，此时要更新 d[1]，所以这里将 pos 设为 0
+            int l = 0, r = len, pos = 0;
+            while(l < r) {
+                int mid = l + (r-l)/2;
+                if (d[mid] < nums[i]) {
+                    pos = mid;
+                    l = mid + 1;
+                } else {
+                    r = mid;
+                }
+            }
+            d[pos + 1] = nums[i];
+        }
+    } 
+    return len;
+}
+
+int lengthOfLIS_2(vector<int>& nums)
+{
+    int n = nums.size();
+    if (n <= 1) return n;
+    vector<int> d; d.reserve(n);
+    d.push_back(nums[0]);
+
+    for (int i = 1; i < n; ++i) {
+        if (d.back() < nums[i]) {
+            d.push_back(nums[i]);
+        } else {
+            auto itr = lower_bound(d.begin(), d.end(), nums[i]);
+            *itr = nums[i];
+        }
+    }
+
+    return d.size();
+}
+
 }
 
 namespace _646findLongestChain

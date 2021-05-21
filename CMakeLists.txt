@@ -3,7 +3,7 @@ project(lc VERSION 0.1.0)
 
 include(CTest)
 enable_testing()
-
+set(CXX_STANDARD 17)
 add_executable(lc main.cpp)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

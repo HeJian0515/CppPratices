@@ -7,6 +7,10 @@
 #IncludeRegexTransform: 
 
 H:/VSCodeTest/CPP/main.cpp
-iostream
+cstdio
+-
+numeric
+-
+algorithm
 -
 

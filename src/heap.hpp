@@ -240,10 +240,30 @@ namespace dp
 {
 int findCheapestPrice(int n, vector<vector<int>>& flights, int src, int dst, int k)
 {
-    // dp[i][k]是经过k个终点站后到达站i的最小费用
+    // dp[i][k]是经过最多k个中点站后到达站i的最小费用
     vector<vector<int>> dp(n, vector<int>(k+1, INT_MAX));
-    int findCheapestPrice(int n, vector<vector<int>>& flights, int src, int dst, int k)
     
+    for (vector<int>& flight : flights) {
+        if (flight[0] == src) {
+            dp[flight[1]][0] = flight[2];
+        }
+    }
+    
+    // 循环初始化数组中dst == src的行
+    for (int i = 0; i <= k; ++i) {
+        dp[src][i] = 0;
+    }
+
+    //直达的已经初始化了（即k = 0的情况），现在从k = 1 的开始，即只有一个中转站开始
+    for (int i = 1; i <= k; ++i) {
+        for (vector<int>& flight : flights) {
+            if (dp[flight[0]][i-1] != INT_MAX) {
+                dp[flight[1]][i] = min(dp[flight[1]][i], dp[flight[0]][i-1] + flight[2]);
+            }
+        }
+    }
+
+    return dp[dst][k] == INT_MAX ? -1 : dp[dst][k];
 }
 }
 }
