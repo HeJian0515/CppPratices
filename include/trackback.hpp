@@ -468,7 +468,7 @@ namespace _47PermuteUnique{
 
 }
 
-// 组合
+//! 组合==================================================================
 namespace _77Combine {
 vector<vector<int>> ans;
 
@@ -522,6 +522,54 @@ vector<vector<int>> combinationSum2(vector<int>& candidates, int target) {
 }
 }  // namespace _40backtrack
 
+namespace _473makesquare{
+
+int target = 0;
+
+bool dfs(const vector<int>& nums, vector<int>& sum, int index)
+{
+    if (index == nums.size()) {
+        return sum[0] == sum[1] && sum[1] == sum[2] && sum[2] == sum[3];
+    }
+
+    int ele = nums[index];
+
+    // 尝试加入4个桶中
+    for (int i = 0;  i < 4; ++i) {
+        if (sum[i] + ele <= target) {
+            sum[i] += ele;
+            // 将下一个数放入桶中
+            if (dfs(nums, sum, index+1)) {
+                return true;
+            }
+            sum[i] -= ele;
+        }
+    }
+    return false;
+}
+
+bool makesquare(vector<int>& matchsticks)
+{
+    if (matchsticks.empty()) {
+        return false;
+    }
+
+    int len = matchsticks.size();
+    int perimeter = accumulate(matchsticks.cbegin(), matchsticks.cend(), 0);
+
+    target = perimeter / 4;
+    if (target * 4 != perimeter) { // 不能四等分
+        return false;
+    }
+
+    sort(matchsticks.rbegin(), matchsticks.rend()); // 从大到小排列
+    vector<int> sum(4);
+    
+    return dfs(matchsticks, sum, 0);
+}
+
+}
+
 //* 子集
 namespace _78subsets
 {
@@ -543,6 +591,7 @@ vector<vector<int>> subsets(vector<int>& nums)
     return ans;
 }
 }
+
 
 //* n皇后问题
 namespace _51solveNQueens
@@ -599,7 +648,7 @@ vector<vector<string>> solveNQueens(int n)
 }
 
 
-//! 划分子集
+//! 划分子集=========================================
 namespace _698canPartitionKSubsets
 {
 #if 1
@@ -631,5 +680,5 @@ bool canPartitionKSubsets(vector<int>& nums, int k)
 
     return dfs(0);
 }
-#endif
+#endif // 回溯法
 }
