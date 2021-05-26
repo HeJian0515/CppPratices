@@ -5,71 +5,47 @@
 #include <cassert>
 using namespace std;
 
+
+
 namespace _241DiffWaysToCompute {
 
-inline bool IsOperation(char c) {
-    return '+'==c || '-'==c || '*'==c;
-}
+unordered_map<string, vector<int>> memo;
 
-int caculate(int num1 , char c, int num2) {
-    assert(IsOperation(c));
-    switch (c)  {
-        case '+':
-            return num1 + num2;
-            break;
-        case '-':
-            return num1 - num2;
-            break;
-        case '*':
-            return num1 * num2;
-            break;
-        default:
-            return  0;
-            break;
-    }
-}
-// 备忘录——递归时去重
-unordered_map<string, vector<int>> strVecMap;
-
-bool iSDigital(const string& str) {
-    for (int i = 0; i < str.size(); ++i) {
-        if (IsOperation(str[i])) return false;
-    }
-    return true;
-}
-vector<int> DiffWaysToCompute(const string& input) {
-    if (input.empty())  return {};
-
-    if (strVecMap.count(input)) return strVecMap[input];
+vector<int>& Divide(const string& s)
+{   
+    if (memo.count(s)) return memo[s];
 
     vector<int> res;
-    // 如果输入字符不包含操作符，只包含数字
-    if (iSDigital(input)) {
-        res.emplace_back(std::atoi(input.c_str()));
-        strVecMap[input] = res;
-        return res;
-    }
-    
-    for (int i = 0; i < input.size(); ++i) {
-        // 运算符将字符串分成两部分
-        if (IsOperation(input[i])) {
-            vector<int> LeftCalcRes = DiffWaysToCompute(input.substr(0, i));
-            vector<int> RightCalcRes = DiffWaysToCompute(input.substr(i+1));
-            // 将左右两个结果组合
-            res.reserve(LeftCalcRes.size() * RightCalcRes.size());
-            for (auto l : LeftCalcRes) {
-                for (auto r : RightCalcRes) {
-                    res.emplace_back(caculate(l, input[i], r));
+    for (int i = 0; i < s.size(); ++i)
+    {
+        char c = s[i];
+        if (c == '+' || c == '-' || c == '*')
+        {
+            vector<int>& left = Divide(s.substr(0, i));
+            vector<int>& right = Divide(s.substr(i+1));
+            res.reserve(left.size() * right.size());
+
+            for (const int l : left) {
+                for (const int r : right) {
+                    switch (c) {
+                        case '+': res.push_back(l+r); break;
+                        case '-': res.push_back(l-r); break;
+                        case '*': res.push_back(l*r); break;
+                    }
                 }
             }
+            assert(res.size() == left.size()*right.size());
         }
     }
-    strVecMap[input] = res;
-    return res;
+    
+    if (res.empty()) res.push_back(stoi(s));
+    vector<int>& ans = memo[s] = std::move(res);
+    return ans;
 }
-vector<int> diffWaysToCompute(string input) {
-    strVecMap.clear();
-    return DiffWaysToCompute(input);
+
+vector<int> diffWaysToCompute(string expression)
+{
+    return Divide(expression);
 }
 }
 
@@ -106,5 +82,76 @@ vector<TreeNode*> GenetateTrees(int left, int right) {
 vector<TreeNode*> generateTrees(int n) {
     if (0 == n) return {};
     return GenetateTrees(1, n);
+}
+}
+
+namespace _932beautifulArray
+{
+unordered_map<int, vector<int>> memo;
+
+// 对[1,...,N],将其等分为两部分，left和right，如果left和right都是漂亮数组
+// 同时left全是奇数,right全是偶数，那么left+right也是漂亮数组
+// 如果知道了N的漂亮数组，通过变换让N->2N的奇部
+vector<int>& f(int n)
+{
+    if (memo.count(n)) return memo[n];
+
+    vector<int> res(n);
+    if (n == 1) {
+        res[0] = 1;
+    } else {
+        int t = 0;
+        for (int x : f((n+1)/2)) { // 奇数放在左边
+            res[t++] = 2*x - 1;
+        }
+        for (int x : f(n/2)) { // 偶数放在右边
+            res[t++] = 2*x;
+        }
+    }
+    memo[n] = move(res);
+    return memo[n];
+}
+
+vector<int> beautifulArray(int n)
+{
+    return f(n);
+}
+}
+
+namespace _312maxCoins
+{
+vector<vector<int>> rec;
+vector<int> val;
+
+int solve(int left, int right)
+{
+    if (left >= right-1) {
+        return 0;
+    }
+
+    if (rec[left][right] != -1) {
+        return rec[left][right];
+    }
+
+    for (int i = left+1; i < right; ++i) {
+        int sum = val[left] * val[i] * val[right];
+        sum += solve(left, i) + solve(i, right);
+        rec[left][right] = max(rec[left][right], sum);
+    }
+
+    return rec[left][right];
+}
+
+
+int maxCoins(vector<int>& nums)
+{
+    int n = nums.size();
+    val.resize(n+2);
+    for (int i = 1; i <= n; ++i) {
+        val[i] = nums[i-1];
+    }
+    val[0] = val[n+1] = 1;
+    vector<vector<int>>(n+2, vector<int>(n+2, -1)).swap(rec);
+    return solve(0, n+1);
 }
 }

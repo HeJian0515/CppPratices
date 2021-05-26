@@ -351,27 +351,31 @@ int findLongestChain_1(vector<vector<int>>& pairs)
 }
 }
 
+//* 摆动序列
 namespace _376wiggleMaxLength
 {
 int wiggleMaxLength(vector<int>& nums) {
+    // up[i]表示以前i个元素中的某一个为结尾的最长的 上升摆动序列 的长度
+    // down[i]表示以前i个元素中的某一个文结尾的最长 下降摆动子序列 得长度
     int n = nums.size();
     if (n < 2) return n;
-    // up[i] 前 i 个元素中的某一个为结尾的最长的「上升摆动序列」的长度。
-    vector<int> up(n, 1);
-    vector<int> down(n, 1);
-    for (int i = 1; i < n; ++i) {
+
+    vector<int> up(n), down(n);
+    up[0] = down[0] = 1;
+    for (int i = 1; i < n; ++i)
+    {
         if (nums[i] > nums[i-1]) {
-            up[i] = std::max(up[i-1], down[i-1] + 1);
+            up[i] = max(up[i-1], down[i-1]+1);
             down[i] = down[i-1];
         } else if (nums[i] < nums[i-1]) {
             up[i] = up[i-1];
-            down[i] = std::max(up[i-1]+1, down[i-1]);
+            down[i] = max(up[i-1]+1, down[i-1]);
         } else {
             up[i] = up[i-1];
             down[i] = down[i-1];
         }
     }
-    return std::max(up[n-1], down[n-1]);
+    return max(up[n-1], down[n-1]);
 }
 
 int wiggleMaxLength(vector<int>& nums) {
@@ -651,83 +655,46 @@ int minSteps(int n) {
 //!================================= 正则表达式 ==================================
 namespace _10isMatch
 {
-string_view ssv;
-string_view psv;
-vector<vector<char>> memo;
-
-// 匹配s[i:] p[j:]
-bool isMatchHelper(int i, int j) 
+// if (p[j] != '*) 
+//      if matches(s[i], p[j]) dp[i][j] = dp[i-1][j-1]
+//      else false
+// else
+//      if match(s[i], p[j-1]) dp[i][j] = dp[i-1][j] or dp[i][j-2] 要么丢弃s[i]要么丢弃p[i-1]*
+//      else dp[i][j] = dp[i][j-2];
+bool isMatch(string s, string p)
 {
-    if (memo[i][j] != 2) return memo[i][j];
-    if (j == psv.length()) return i == ssv.length();
-
-    bool first = (i < ssv.length() && (psv[j] == ssv[i] || psv[j] == '.'));
-
-    bool ans = false;
-    if (j < psv.length()-2 && psv[j+1] == '*') {
-            // 与*匹配0次
-        ans = ((first && isMatchHelper(i+1, j+2)) || (first && isMatchHelper(i+1, j))); 
-    } else {
-        ans = (first && isMatchHelper(i+1, j+1));
-    }
-
-    memo[i][j] = ans;
-    return ans;
-}
-
-bool isMatch(const string& s, const string& p)
-{
-    ssv = s;
-    psv = p;
-    vector<vector<char>>(s.length(), vector<char>(p.length(), 2)).swap(memo);
-
-    return isMatchHelper(0, 0);
-}
-
-
-bool isMatch_1(const string& s, const string& p)
-{
-    int m = s.length();
-    int n = p.size();
-
-    // s[0:i] p[0:j]
-    auto matches = [&s, &p](const int i, const int j) {
-        if (0 == i) { // s[0:0]为空串
+    int m = s.size(), n = p.size();
+    vector<vector<char>> dp(m+1, vector<char>(n+1, false));
+    dp[0][0] = true;
+    auto matches = [&](const int i, const int j) {
+        if (i == 0) {
             return false;
         }
-        if ('.' == p[j-1]) {
+        if (p[j-1] == '.') {
             return true;
         }
-
         return s[i-1] == p[j-1];
     };
 
-    // dp[i][j] 表示 s 的前 i 个是否能被 p 的前 j 个匹配
-    vector<vector<int>> f(m+1, vector(n+1, 0));
-    f[0][0] = true;
-
     for (int i = 0; i <= m; ++i) {
         for (int j = 1; j <= n; ++j) {
-            if ('*' == p[j-1]) {
-                f[i][j] |= f[i][j-2]; // 不使用 (char + *)
+            if (p[j-1] == '*') {
+                dp[i][j] |= dp[i][j-2];
                 if (matches(i, j-1)) {
-                    f[i][j] |= f[i-1][j]; // 与 (char + *)匹配, 继续使用(char + *)
+                    dp[i][j] |= dp[i-1][j];
                 }
-            }
-            else {
+            } else {
                 if (matches(i, j)) {
-                    f[i][j] |= f[i-1][j-1];
+                    dp[i][j] |= dp[i-1][j-1];
                 }
             }
         }
     }
-
-    return f[m][n];
+    return dp[m][n];
 }
 
 }
 
-//! ===============================高楼扔鸡蛋=====================================
 
 namespace _64minPathSum
 {
