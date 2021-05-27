@@ -1,3 +1,0 @@
-H:/VSCodeTest/CPP/build/CMakeFiles/edit_cache.dir
-H:/VSCodeTest/CPP/build/CMakeFiles/lc.dir
-H:/VSCodeTest/CPP/build/CMakeFiles/rebuild_cache.dir

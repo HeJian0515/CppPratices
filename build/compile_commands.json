@@ -1,7 +1,0 @@
-[
-{
-  "directory": "H:/VSCodeTest/CPP/build",
-  "command": "D:\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\lc.dir\\main.cpp.obj -c H:\\VSCodeTest\\CPP\\main.cpp",
-  "file": "H:/VSCodeTest/CPP/main.cpp"
-}
-]
