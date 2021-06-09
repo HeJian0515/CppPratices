@@ -139,6 +139,29 @@ int findMaxForm_1(vector<string>& strs, int m, int n)
 //* 找零钱的最少硬币数
 namespace _322coinChange
 {
+// dp[i][j]:使用前i种物品，最少使用多少个硬币
+int coinChange_Orgin(vector<int>& coins, int amount)
+{
+    int m = coins.size();
+    vector<vector<int>> dp(m+1, vector<int>(amount+1, amount+1));
+
+    for (int i = 0; i <= m; ++i) {
+        dp[i][0] = 0;
+    }
+
+    for (int i = 1; i <= m; ++i) {
+        for (int j = 1; j <= amount; ++j) {
+            if (j < coins[i-1]) {
+                dp[i][j] = min(dp[i][j], dp[i-1][j]);
+            } else {
+                dp[i][j] = min(dp[i-1][j], dp[i][j-coins[i-1]]);
+            }
+        }
+    }
+
+    return dp[m][amount] == amount+1 ? -1 : dp[m][amount];
+}
+
 int coinChange(vector<int>& coins, int amount) {
     vector<int> dp(amount+1, amount+1);
     dp[0] = 0;
@@ -172,7 +195,7 @@ namespace _518change
 {
 int change(int amount, vector<int>& coins) {
     int n = coins.size();
-    vector<vector<int>> dp(n+1, vector(amount+1, 0));
+    vector<vector<int>> dp(n+1, vector<int>(amount+1));
     for (int i = 0; i <= n; ++i) {
         dp[i][0] = 1;
     }
@@ -242,5 +265,34 @@ int combinationSum4(vector<int>& nums, int target) {
         }
     }
     return dp[target];
+}
+}
+
+//! ================= 数组划分==========================================
+// 从数组中划分出两堆，让他们差最小
+namespace _1049lastStoneWeightII
+{
+int lastStoneWeightII(vector<int>& stones)
+{
+    int sum = accumulate(stones.cbegin(), stones.cend(), 0);
+    const int n = stones.size(), m = sum/2;
+    vector<vector<char>> dp(n+1, vector<char>(m+1));
+    dp[0][0] = true;
+
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j <= m; ++j) {
+            if (j < stones[i]) {
+                dp[i+1][j] = dp[i][j];
+            } else {
+                dp[i+1][j] = dp[i][j] || dp[i][j-stones[i]];
+            }
+        }
+    }
+
+    for (int j = m; ; --j) {
+        if (dp[n][j]) {
+            return sum - 2*j;
+        }
+    }
 }
 }

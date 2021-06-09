@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <string>
 #include <cmath>
+#include <climits>
 
 using namespace std;
 
@@ -92,8 +93,6 @@ int trailingZeros(int n) {
 
 namespace QuickPow
 {
-
-
 using LL = long long;
 
 // 泛型的非递归快速幂
@@ -149,3 +148,87 @@ matrix Qpow(matrix a, LL n)
     return ans;
 }
 }
+
+namespace _Mod_Factorial
+{
+// n!后面0的个数
+int trailingZeros(int n)
+{
+    int res = 0;
+    for (int d = n; d/5 > 0; d = d/5) {
+        res += d/5;
+    }
+    return res;
+}
+//***********************************************************************************
+//***********************************************************************************
+// 现在是给你一个非负整数 K，问你有多少个 n，使得 n! 结果末尾有 K 个 0。
+//! n!是递增的，所以找到最小的n就行
+
+// trailingZeroes(n) == K的右侧边界
+long right_bound(int target) 
+{
+    long lo = 0, hi = LONG_MAX;
+    while (lo < hi) {
+        long mid = lo + (hi -lo)/2;
+        int zeros = trailingZeros(mid);
+        if (zeros < target) {
+            lo = mid + 1;
+        } else if (zeros > target) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    return lo;
+}
+// trailingZeros == k的左边界
+long left_bound(int target) {
+    long lo = 0, hi = LONG_MAX;
+    while (lo < hi) {
+        long mid = lo + (hi-lo)/2;
+        int zeros = trailingZeros(mid);
+        if (zeros < target) {
+            lo = mid + 1;
+        } else if (zeros > target) {
+            hi = mid;
+        } else {
+            hi = mid;
+        }
+    }
+    return lo;
+}
+
+int preimageSizeFZF(int K)
+{
+    // 左边界和右边界之差+1就是答案
+    return right_bound(K) - left_bound(K) + 1;
+}
+
+//***********************************************************************************
+//***********************************************************************************
+int base = 1337;
+//! a^[...] mod base
+int mypow(int a, int k) {
+    a %= base;
+    int res = 1;
+    for (int i = 0; i < k; ++i) {
+        res *= a;
+        res %= base;
+    }
+    return res;
+}  
+
+int superPow(int a, vector<int>& b) {
+    if (b.empty()) return 1;
+    int last = b.back();
+    b.pop_back();
+
+    int part1 = mypow(a, last);
+    int part2 = mypow(superPow(a, b), 10);
+
+    return (part1 * part2) % base;
+}
+
+}
+

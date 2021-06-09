@@ -3,5 +3,5 @@ project(lc VERSION 0.1.0)
 
 include_directories(./include)
 include_directories(./src)
-set(CXX_STANDARD 17)
+set(CXX_STANDARD 11)
 add_executable(lc main.cpp)

@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <unordered_map>
 #include <vector>
 using namespace std;
@@ -75,6 +76,7 @@ namespace _147List {
 }    
 
 
+// 计算[0...num]中各个数1的个数
 namespace _338countBits
 {
 vector<int> countBits(int num) {
@@ -97,11 +99,65 @@ vector<int> countBits_1(int num) {
     return bits;
 }
 
+//! 动态规划
 vector<int> countBits_2(int num) {
     vector<int> bits(num+1);
     for (int i = 1; i <= num; ++i) {
         bits[i] = bits[i & (i-1)] + 1;
     }
     return bits;
+}
+}
+
+//! 前缀和 和 哈希表
+namespace _523checkSubarraySum
+{
+bool checkSubarraySum(vector<int>& nums, int k)
+{
+    int m = nums.size();
+    if (m < 2) return false;
+
+    unordered_map<int, int> mp; // 记录余数最早出现的位置
+    mp[0] = -1;
+    int remainder = 0;
+    for (int i = 0; i < m; ++i) {
+        remainder = (remainder + nums[i]) % k; // sum[0...i]的余数
+        if (mp.count(remainder)) {
+            int prevIndex = mp[remainder];
+            if (i - prevIndex >= 2) {
+                return true;
+            }
+        } else {
+            mp[remainder] = i;
+        }
+    }
+    return false;
+}
+}
+
+//! 前缀和 和 哈希表
+namespace _525findMaxLength
+{
+int findMaxLength(vector<int>& nums)
+{
+    unordered_map<int, int> sum2Index{{0, -1}};
+    int cnt = 0;
+
+    int n = nums.size();
+    int ans = 0;
+    for (int i = 0; i < n; ++i) {
+        if (nums[i] == 1) {
+            ++cnt;
+        } else {
+            --cnt;
+        }
+        
+        if (sum2Index.count(cnt)) {
+            ans = max(ans, i - sum2Index[cnt]);
+        } else {
+            sum2Index[cnt] = i; 
+        }
+    }
+    return ans;
 }
 }

@@ -46,32 +46,46 @@ void quickSortOrigin(int *arr, int begin, int end) {
 }
 
 namespace _215findKthLargest {
-
-inline int partition(vector<int>& a, int l, int r)
+int QuickSort(vector<int>& nums, int l, int r)
 {
-    int x = a[r], i = l - 1;
-    for (int j = l; j < r; ++j) {
-        if (a[j] <= x) {
-            swap(a[++i], a[j]);
+    int randIndex = l + rand()%(r-l+1);
+    int pivot = nums[randIndex];
+    swap(nums[l], nums[randIndex]);
+
+    while (l < r)
+    {
+        while (l < r && nums[r] > pivot) {
+            --r;
+        }
+        nums[l] = nums[r];
+
+        while (l < r && nums[l] <= pivot) {
+            ++l;
+        }
+        nums[r] = nums[l];
+    }
+
+    nums[l] = pivot;
+    return l;
+}
+int findKthLargest_1(vector<int>& nums, int k)
+{   
+    int n = nums.size();
+    k = n - k;
+    srand(time(NULL));
+    int l = 0, r = n-1;
+    for (;;)
+    {
+        int pos = QuickSort(nums, l, r);
+        if (pos == k) {
+            return nums[pos];
+        } else if (pos < k) {
+            l = pos+1;
+        } else {
+            r = pos-1;
         }
     }
-    swap(a[i+1], a[r]);
-    return i+1;
-}
-
-inline int randomPartition(vector<int>& a, int l, int r) {
-    int i = rand() % (r - l + 1) + l;
-    swap(a[i], a[r]);
-    return partition(a, l, r);
-}
-
-int quickSelect(vector<int>& a, int l, int r, int index) {
-   int q = randomPartition(a, l, r);
-   if (q == index) {
-       return a[q];
-   } else {
-       return q < index ? quickSelect(a, q+1, r, index) : quickSelect(a, l, q-1, index);
-   }
+    return -1;
 }
 
 int findKthLargest(vector<int>& nums, int k) {

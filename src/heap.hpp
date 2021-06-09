@@ -2,7 +2,56 @@
 #include <vector>
 #include <functional>
 #include <limits.h>
+#include <set>
+#include <iostream>
 using namespace std;
+
+
+class MaxHeap
+{
+    vector<int> heap;
+
+public:
+    int top() { return heap[0];}
+
+    // 插入任意值; 把新的数字放在最后一位，然后上浮
+    void push(int k)
+    {
+        heap.push_back(k);
+        swim(heap.back());
+    }
+
+    // 删除最大值：把最大值挪到开头，然后下沉
+    void pop()
+    {
+        heap[0] = heap.back();
+        heap.pop_back();
+        sink(0);
+    }
+
+private:
+    // 上浮
+    void swim(int pos)
+    {
+        // 孩子大于父亲
+        while (pos > 1 && heap[(pos-1)/2] < heap[pos]) {
+            swap(heap[(pos-1)/2], heap[pos]);
+            pos = (pos - 1) / 2;
+        }
+    }
+
+    void sink(int pos)
+    {
+        while (2 * pos < heap.size())
+        {
+            int i = 2 * pos + 1;
+            if (i < heap.size()-1 && heap[i] < heap[i+1]) ++i; // 取出孩子中大的索引
+            if (heap[pos] >= heap[i]) break;
+            swap(heap[pos], heap[i]);
+            pos = i;
+        }
+    }
+};
 
 
 namespace _502findMaximizedCapital
@@ -123,20 +172,19 @@ namespace _253minMeetingRooms
 {
 int minMeetingRooms(vector<vector<int>>& intervals)
 {
-    int n = intervals.size();
+    const int n = intervals.size();
     if (n == 0) return 0;
 
     sort(intervals.begin(), intervals.end(), 
         [](const vector<int>& v1, const vector<int>& v2) {return v1[0] < v2[0];});
     // 小顶堆
     auto cmpByStart = [&intervals](const int i, const int j) {return intervals[i][1] > intervals[j][1];};
-    vector<int> v; v.reserve(n);
-    priority_queue<int, vector<int>, decltype(cmpByStart)> minHeap(cmpByStart, v);
+    priority_queue<int, vector<int>, decltype(cmpByStart)> minHeap(cmpByStart);
 
     minHeap.push(0); // 将第一个开始的会议加入队列
 
     // 最小堆堆顶中元素代表最早结束的会议
-    // 如果后面的会议的开始时间在在这结束之后，这可以把这个会议室给后面的会议， 更新结束时间
+    // 如果后面的会议的开始时间在在这结束之后，这可以把这个会议室给后面的会议， 更新这个会议室的最终结束时间
     // 对应是弹出堆顶元素，再加入新元素
     for (int i = 1; i < n; ++i) {
         if (intervals[i][0] >= intervals[minHeap.top()][1]) {
@@ -266,5 +314,211 @@ int findCheapestPrice(int n, vector<vector<int>>& flights, int src, int dst, int
 
     return dp[dst][k] == INT_MAX ? -1 : dp[dst][k];
 }
+}
+}
+
+namespace _218getSkyline
+{
+namespace multiset__
+{
+vector<vector<int>> getSkyline(vector<vector<int>>& buildings)
+{
+    multiset<pair<int, int>> all;
+    vector<vector<int>> res;
+
+    // 左坐标相同时, 高的在前面
+    // 右坐标相同时, 低的在前面
+    // 一左一右是， 左坐标在前
+    for (auto& e : buildings) {
+        all.insert(make_pair(e[0], -e[2]));
+        all.insert(make_pair(e[1], e[2]));
+    }
+
+    multiset<int> heights{{0}}; // 保存当前位置所有高度
+    vector<int> last = {0, 0}; // 保存上一个位置的横坐标以及高度
+
+    for (auto& p : all)
+    {
+        if (p.second < 0) {
+            heights.insert(-p.second); // 左端点，高度入堆
+        } else {
+            heights.erase(heights.find(p.second)); // 右端点，移除高度
+        }
+
+        // 当前关节点，最大高度
+        auto maxHeight = *heights.rbegin();
+
+        // 当前最大高度如果不同于上一个高度，说明这是一个转折点
+        if (last[1] != maxHeight) {
+            // 更新last，并加入结果集
+            last[0] = p.first;
+            last[1] = maxHeight;
+            res.push_back(last);
+        }
+    }
+    return res;
+}
+
+vector<vector<int>> getSkyline_1(vector<vector<int>>& buildings)
+{
+    int n = buildings.size();
+    vector<pair<int, int>> points;  points.reserve(2*n);
+    for (const auto& building : buildings) {
+        points.emplace_back(make_pair(building[0], -building[2]));
+        points.emplace_back(make_pair(building[1], building[2]));
+    }
+
+    sort(points.begin(), points.end());
+    multiset<int> heights;
+    heights.insert(0);
+    int MaxH = 0;
+
+    vector<vector<int>> keyPts;
+    for (auto [x_pos, hei] : points)
+    {
+        if (hei < 0) {
+            heights.insert(-hei);
+        } else {
+            heights.erase(heights.find(hei));
+        }
+
+        int curMaxH = *heights.rbegin();
+        // 看新加入/删除的建筑高度是否影响了建筑的最大高度
+        // 当前最大高度不等于原先的最大高度就表示这是一个高度突变点
+        if (curMaxH != MaxH) {
+            keyPts.push_back({x_pos, curMaxH});
+            MaxH = curMaxH;
+        }
+    }
+   return keyPts;
+
+}
+
+}
+
+
+vector<vector<int>> getSkyline(vector<vector<int>>& buildings)
+{
+    vector<vector<int>> ans;
+    // 获取目前会拔高天际线，且妨碍到前一个建筑物(的右端端点)的下一个建筑物
+    priority_queue<pair<int, int>> max_heap; // 高度，右端
+    int i= 0, len = buildings.size();
+    int curX, curH;
+    while (i < len || !max_heap.empty())
+    {
+        // 当前建筑一部分在 队内建筑内
+        if (max_heap.empty() || (i < len && buildings[i][0] <= max_heap.top().second))
+        {
+            curX = buildings[i][0];
+            while (i < len && curX == buildings[i][0]) {
+                max_heap.emplace(buildings[i][2], buildings[i][1]);
+                ++i;
+            }
+        } else { 
+            curX = max_heap.top().second;
+            while (!max_heap.empty() && curX >= max_heap.top().second) {
+                max_heap.pop();
+            }
+        }
+        curH = (max_heap.empty() ? 0 : max_heap.top().first);
+        if (ans.empty() || curH != ans.back()[1]) {
+            ans.push_back({curX, curH});
+        }
+    }
+    return ans; 
+}
+
+}
+
+// 从空闲服务器队列取出服务器，加入忙服务器队列
+// 任务完成后,忙服务器从队列中取出，继续加入空闲服务器
+// 空闲服务器根据权重由小到大排列
+// 忙服务器根据结束时间由前向后排列
+namespace _1882assignTasks
+{
+using PII = pair<int, int>;
+
+vector<int> assignTasks(vector<int>& servers, vector<int>& tasks)
+{
+    int m = servers.size();
+    int n = tasks.size();
+
+    // 工作中的服务器，存储二元组(t， idx)  ---t 结束时间
+    priority_queue<PII, vector<PII>, greater<PII>> busy;
+    // 空闲的服务器，存储二元组(w, idx)   ---w 权重
+    priority_queue<PII, vector<PII>, greater<PII>> idle; 
+    for (int i = 0; i < m; ++i) {   
+        idle.emplace(servers[i], i);
+    }  
+
+    int ts = 0; 
+    // 将优先队列busy中满足 t <= ts 依次取出并放入优先队列 idle
+    auto release = [&]() {
+        while (!busy.empty() && busy.top().first <= ts) {
+            auto&& [_, idx] = busy.top();
+            idle.emplace(servers[idx], idx);
+            busy.pop();
+        }
+    };
+
+    vector<int> ans;
+    for (int i = 0; i < n; ++i) {
+        ts = max(ts, i);
+        release();
+
+        if (idle.empty()) {
+            ts = busy.top().first;
+            release();
+        }
+
+        auto&& [_, idx] = idle.top();
+        ans.push_back(idx);
+        busy.emplace(ts+tasks[i], idx);
+        idle.pop();
+    }
+
+    return ans;
+
+}
+}
+
+// 每次从队列取出要投放的广告，更新其结束时间在放回去
+namespace _TX_04_18_2
+{
+struct node
+{
+    int t;      // 间隔多少才能再次投放
+    int id; 
+    int stamp; // 结束的时间
+
+    bool operator<(const node& other) const {
+        return stamp == other.stamp ? id > other.id : stamp > other.stamp;
+    }
+};
+
+
+int main(void)
+{
+    ios::sync_with_stdio(false);
+
+    int n, k;
+    cin >> n >> k;
+    priority_queue<node> q;
+
+    for (int i = 1; i <= n; ++i) {
+        int t;
+        cin >> t;
+        q.push(node{t, i, t});
+    }
+
+    int ts = 0;
+    while (k--)
+    {
+        node x = q.top(); q.pop();
+        cout << x.id;
+        q.push(node{x.t, x.id, x.stamp + x.t});
+    }
+    
+    return 0;
 }
 }

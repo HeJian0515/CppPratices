@@ -38,3 +38,18 @@ ListNode* reverseBetween(ListNode* head, int left, int right) {
 }
 
 }
+
+namespace _Offer52getIntersectionNode
+{
+ListNode* getIntersectionNode(ListNode *headA, ListNode *headB)
+{
+    ListNode* aCur = headA;
+    ListNode* bCur = headB;
+
+    while (aCur != bCur) {
+        aCur = aCur != nullptr ? aCur->next : headB;
+        bCur = bCur != nullptr ? bCur->next : headA;
+    }
+    return aCur;
+}
+}

@@ -260,3 +260,98 @@ int lengthOfLongestSubstringKDistinct(string s, int k)
 }
 }
 
+// 删除一个字符后是否仍然为回文
+namespace _680validPalindrome
+{
+bool isPalindrome(const string& str, int l, int r)
+{
+    while (l <= r) {
+        if (str[l] == str[r]) {
+            ++l, --r;
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool validPalindrome(string s)
+{
+    int l = 0, r = s.size()-1;
+    while (l <= r) {
+        if (s[l] == s[r]) {
+            ++l, --r;
+        } else {
+            return isPalindrome(s, l+1, r) || isPalindrome(s, l, r-1);
+        }
+    }
+    return true;
+}
+}
+
+// 反转元音字符
+namespace _345reverseVowels
+{
+string reverseVowels(string s)
+{
+    int l = 0;
+    int r = s.size()-1;
+
+    const unordered_set<char> vowels{'a', 'e', 'i', 'o', 'u'};
+
+    while (l <= r) {
+       int lIsVow = vowels.count(s[l]);
+       int rIsVow = vowels.count(s[r]);
+
+       if (!lIsVow && !rIsVow) {
+           ++l, --r;
+       } else if (lIsVow && rIsVow) {
+           swap(s[l++], s[r--]);
+       } else if (lIsVow) {
+           while (l <= r && !vowels.count(s[r])) {
+               --r;
+           }
+           swap(s[l++], s[r--]);
+       } else {
+           while (l <= r && !vowels.count(s[l])) {
+               ++l;
+           }
+           swap(s[l++], s[r--]);
+       }
+    }
+    return s;
+}
+}
+
+// 判断一个字符能不能通过删除得到
+namespace _524findLongestWord
+{
+bool isSubstring(const string& s, const string& sub)
+{
+    int sl = 0, subl = 0;
+    while (sl < s.size() && subl < sub.size()) {
+        if (s[sl] == sub[subl]) {
+            ++subl;
+        }
+        ++sl;
+    }
+    return subl == sub.size();
+}
+string findLongestWord(string s, vector<string>& dictionary)
+{
+    string ans;
+
+    for(const auto& sub : dictionary) {
+        if (sub.size() >= ans.size()) {
+            if (isSubstring(s, sub)) {
+                if (sub.size() == ans.size()) {
+                    ans = sub < ans ? sub : ans;
+                } else {
+                    ans = sub;
+                }
+            }
+        }
+    }
+    return ans;
+}
+}
