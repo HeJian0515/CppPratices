@@ -323,12 +323,12 @@ namespace multiset__
 {
 vector<vector<int>> getSkyline(vector<vector<int>>& buildings)
 {
-    multiset<pair<int, int>> all;
+    multiset<pair<int, int>> all; // 最重要作用是将区间按位置排序
     vector<vector<int>> res;
 
     // 左坐标相同时, 高的在前面
     // 右坐标相同时, 低的在前面
-    // 一左一右是， 左坐标在前
+    // 一左一右， 左坐标在前
     for (auto& e : buildings) {
         all.insert(make_pair(e[0], -e[2]));
         all.insert(make_pair(e[1], e[2]));
@@ -397,35 +397,44 @@ vector<vector<int>> getSkyline_1(vector<vector<int>>& buildings)
 }
 
 
-vector<vector<int>> getSkyline(vector<vector<int>>& buildings)
+vector<vector<int>> getSkyline_2(vector<vector<int>>& buildings)
 {
     vector<vector<int>> ans;
-    // 获取目前会拔高天际线，且妨碍到前一个建筑物(的右端端点)的下一个建筑物
-    priority_queue<pair<int, int>> max_heap; // 高度，右端
-    int i= 0, len = buildings.size();
-    int curX, curH;
+    priority_queue<pair<int, int>> max_heap;
+
+    int i = 0, len = buildings.size();
+    int cur_x, cur_h;
+
     while (i < len || !max_heap.empty())
     {
-        // 当前建筑一部分在 队内建筑内
-        if (max_heap.empty() || (i < len && buildings[i][0] <= max_heap.top().second))
+        // 现在在遍历的建筑在当前最高的建筑内
+        if (max_heap.empty() || i < len && buildings[i][0] <= max_heap.top().second)
         {
-            curX = buildings[i][0];
-            while (i < len && curX == buildings[i][0]) {
+            cur_x = buildings[i][0];
+            // 将当前遍历到的建筑加入队列
+            while (i < len && cur_x == buildings[i][0]) {
                 max_heap.emplace(buildings[i][2], buildings[i][1]);
                 ++i;
             }
-        } else { 
-            curX = max_heap.top().second;
-            while (!max_heap.empty() && curX >= max_heap.top().second) {
+        }
+        else // 现在遍历的建筑在当前最高的建筑外 --> 右边
+        { 
+            // 将在当前最高建筑右边的建筑全部弹出
+            cur_x = max_heap.top().second;
+            while (!max_heap.empty() && cur_x >= max_heap.top().second) {
                 max_heap.pop();
             }
         }
-        curH = (max_heap.empty() ? 0 : max_heap.top().first);
-        if (ans.empty() || curH != ans.back()[1]) {
-            ans.push_back({curX, curH});
+
+        // 当前最高建筑
+        cur_h = max_heap.empty() ? 0 : max_heap.top().first;
+
+        // 当前最高建筑不应该和上次记录的点相同
+        if (ans.empty() || cur_h != ans.back()[1]) {
+            ans.push_back({cur_x, cur_h});
         }
     }
-    return ans; 
+    return ans;
 }
 
 }

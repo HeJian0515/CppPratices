@@ -4,7 +4,9 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
-
+#include <cmath>
+#include <cstdlib>
+#include <set>
 using namespace std;
 
 namespace _88merge 
@@ -354,4 +356,72 @@ string findLongestWord(string s, vector<string>& dictionary)
     }
     return ans;
 }
+}
+
+namespace _containsNearbyAlmostDuplicate
+{
+//! 将[i-k, i-1]的元素放入有序集合中, 在里面寻找[nums[i]-t, nums[i]+t]的元素
+// 保持集合中始终是nums[i]，左侧的k个元素
+bool containsNearbyAlmostDuplicate(vector<int>& nums, int k, int t)
+{
+    int n = nums.size();
+    set<int> rec;
+
+    for (int i = 0; i < n; ++i) {
+        // 找到下界， 并比较下界的值<= nums[i]+t
+        auto iter = rec.lower_bound(max(nums[i], INT_MIN+t)-t);
+        if (iter != rec.end() && *iter <= min(nums[i], INT_MAX-t)+t) {
+            return true;
+        }
+        rec.insert(nums[i]);
+        if (i >= k) {
+            rec.erase(nums[i-k]);
+        }
+    }
+
+    return false;
+}
+
+//! 桶排序 ---》 找出生日在30天之内的人; 按月份分桶，再比较相邻桶中的元素
+long getID(long x, long t) 
+{
+    // 如果x元素大于等于0,直接分桶
+    if (x >= 0) {
+        return x /(t+1);
+    } else {
+        return (x + 1)/(t+1) -1;
+    }
+    return 0;
+}
+
+bool containsNearbyAlmostDuplicate(vector<int>& nums, int k, int t)
+{
+    unordered_map<int, int> m;
+    int n = nums.size();
+    for (int i = 0; i < n; ++i) {
+        long x = nums[i];
+        //给当前元素生成id,这里我们同一个id的桶内元素满足abs(nums[i] - nums[j]) <= t
+        int id = getID(x, t);
+        if (i-(k+1) >= 0) {
+            m.erase(getID(nums[i-(k+1)], t));
+        }
+
+        // 看看当前元素属于的桶中有没有元素
+        if (m.count(id)) {
+            return true;
+        }
+        // 看看前面相邻的桶有没有符合条件的
+        if (m.count(id-1) && abs(m[id-1]-x) <= t) {
+            return true;
+        }
+        // 看看后面相邻的桶有没有符合条件的
+        if (m.count(id+1) && abs(m[id+1]-x) <= t) {
+            return true;
+        }
+
+        m[id] = x;
+    }
+    return false;
+}
+
 }

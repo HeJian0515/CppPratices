@@ -3,8 +3,17 @@
 #include <string>
 #include <cmath>
 #include <climits>
-
+#include <random>
 using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode() : val(0), next(nullptr) {}
+    ListNode(int x) : val(x), next(nullptr) {}
+    ListNode(int x, ListNode *next) : val(x), next(next) {}
+};
+
 
 // 最大公因数
 constexpr int gcd(int a, int b) {
@@ -21,8 +30,8 @@ int xGCD(int a, int b, int& x, int& y) {
         x = 1, y = 0;
         return a;
     }
-    int x1, y1, gcd = xGCD(b, a%b, x1, y1);
-    x = y1, y = x1-(a-b)*y1;
+    int xe, ye, gcd = xGCD(b, a%b, xe, ye);
+    x = ye, y = xe-(a-b)*ye;
     return gcd;
 }
 
@@ -230,5 +239,32 @@ int superPow(int a, vector<int>& b) {
     return (part1 * part2) % base;
 }
 
+}
+
+//! 概率===================
+namespace _probability
+{
+    // 抽一个元素，保证抽取的概率是1/n, 只遍历一遍
+    //! 解法: 遇到第i个元素时，有1/i的概率选择该元素， (1-1/i)保持原有的选择
+    // 抽k个元素,在第i个元素以k/i的概率选择该元素， 以1-k/i的概率保持原有选择
+class Solution {
+    ListNode* head_;
+public:
+    Solution(ListNode* head):head_(head) {
+    }
+
+    int getRandom() {
+        auto cur = head_;
+        int i = 1;
+        int res = head_->val;
+        while (cur) {
+            if ((rand()%i) == 0) {
+                res = cur->val;
+            }
+            cur = cur->next;
+        }
+        return res;
+    }
+};
 }
 

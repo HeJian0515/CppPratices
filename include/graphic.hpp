@@ -1,5 +1,7 @@
 #include <vector>
 #include <queue>
+#include <string>
+#include <regex>
 
 using namespace std;
 
@@ -117,6 +119,47 @@ bool isBipartite(vector<vector<int>>& graph)
 }
 
 //! 拓扑排序 -- 遍历有顺序
+
+namespace _207canFinish
+{
+vector<vector<int>> edges;
+vector<int> indeg;
+
+bool canFinish(int numCourses, vector<vector<int>>& prerequisites)
+{
+    edges.resize(numCourses);
+    indeg.resize(numCourses);
+
+    for (const vector<int>& info : prerequisites) {
+        edges[info[1]].push_back(info[0]); // 1 -- > 0
+        ++indeg[info[0]]; // 0 入度+1
+    }
+
+    queue<int> q;
+    // 入度为0的节点入队
+    for (int i = 0; i < numCourses; ++i) {
+        if (indeg[i] == 0) {
+            q.push(i);
+        }
+    }
+
+    int visited = 0;
+    while (!q.empty()) {
+        ++visited;
+        int u = q.front();
+        q.pop();
+        for (int v : edges[u]) {
+            --indeg[v];
+            if (indeg[v] == 0) {
+                q.push(v);
+            }
+        }
+    }
+
+    return visited == numCourses;
+}
+}
+
 namespace _210findOrder
 {
 // 有向图
@@ -160,6 +203,58 @@ vector<int> findOrder(int numCourses, vector<vector<int>>& prerequisites)
         return {};
     }
     return result;
+}
+
+}
+
+namespace _vivo_{
+// 将 字符串"1,2,-1,1"转化成vector<int>{1,2,-1,1}
+vector<int> split(const string& str) {
+    regex reg(",");
+    vector<string> intsStr(sregex_token_iterator(str.cbegin(), str.cend(), reg, -1),
+        sregex_token_iterator{});
+
+    vector<int> ints; ints.reserve(intsStr.size());
+    for (const auto& intStr : intsStr) {
+        ints.push_back(stoi(intStr));
+    }
+
+    return ints;
+}
+
+string compileSeq(string input) {
+    vector<int> pre = split(input);
+    int n = pre.size();
+    
+    vector<char> visited(n, false);
+    // 保证当两节点没有依赖时，序号小的节点在前面
+    priority_queue<int, vector<int>, greater<int>> q;
+
+    vector<vector<int>> edges(n);
+    vector<int> indeg(n);
+    // 找到入度为0的节点，加入队列
+    for (int i = n-1; i >= 0; --i) {
+        if (pre[i] == -1) {
+            q.push(i);
+        } else {
+            edges[pre[i]].push_back(i);
+            ++indeg[i];
+        }
+    }
+
+    string res;
+    while (!q.empty()) {
+        int node = q.top(); q.pop();
+        res += to_string(node) + ",";
+        for (int v : edges[node]) {
+            --indeg[v];
+            if (indeg[v] == 0) {
+                q.push(v);
+            }
+        }
+    }
+    res.pop_back();
+    return res;
 }
 
 }

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <unordered_map>
 #include <unordered_set>
+#include <functional>
 using namespace std;
 
 // 原地旋转图像(nxn矩阵) 顺时针90°
@@ -186,5 +187,27 @@ vector<int> findErrorNums_1(vector<int>& nums)
     }
     
     return {dup, missing};
+}
+}
+
+
+// 二分查找山峰
+namespace _852peakIndexInMountainArray
+{
+int peakIndexMountainArray(vector<int>& arr)
+{   
+    int n = arr.size();
+    int l = 1, r = n - 2, ans = 0;
+
+    while (l <= r) {
+        int mid = l + (r - l)/2;
+        if (arr[mid] > arr[mid+1]) {
+            ans = mid;
+            r = mid -1;
+        } else {
+            l = mid + 1;
+        }
+    }
+    return ans;
 }
 }

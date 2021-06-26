@@ -570,7 +570,55 @@ bool makesquare(vector<int>& matchsticks)
 
 }
 
-//* 子集
+//* 组合 + 位运算
+namespace _1239maxLength {
+int numOfOne(int n) {
+  int cnt = 0;
+  while (n) {
+    n = n & (n - 1);
+    ++cnt;
+  }
+  return cnt;
+}
+
+int maxLength(vector<string> &arr) {
+
+  // 字符串转化为对应的二进制数
+  vector<int> masks;
+  for (const string &s : arr) {
+    int mask = 0;
+    for (char ch : s) {
+      ch -= 'a';
+      if ((mask >> ch) & 1) {
+        mask = 0;
+        break;
+      }
+      mask |= 1 << ch;
+    }
+    if (mask > 0) {
+      masks.push_back(mask);
+    }
+  }
+
+  int ans = 0;
+  // 从字符串数组中选择字符串
+  function<void(int, int)> backtrack = [&](int pos, int mask) {
+    if (pos == masks.size()) {
+      ans = max(ans, numOfOne(mask));
+      return;
+    }
+    if ((mask & masks[pos]) == 0) {
+      backtrack(pos + 1, mask | masks[pos]);
+    }
+    backtrack(pos + 1, mask);
+  };
+
+  backtrack(0, 0);
+  return ans;
+}
+}
+
+//* 子集====================================================================================
 namespace _78subsets
 {
 vector<vector<int>> ans;

@@ -1,41 +1,47 @@
-#include <numeric>
-#include <algorithm>
-
 #include <iostream>
+#include <cmath>
 #include <vector>
-
+#include <algorithm>
 using namespace std;
 
-vector<int> findErrorNums(vector<int>& nums)
+
+
+
+vector<int> pancakeSort(vector<int>& arr)
 {
-    vector<int> ans; ans.reserve(2);
-    int n = nums.size();
-    for (int i = 0; i < n; ++i) {
-        // 如果i+1位置 不等于nums[i]
-        while (i+1 != nums[i]) { 
-            // 如果nums[i]-1位置的元素等于nums[i] 则nums[i]重复
-            if (ans.empty() && nums[i] == nums[nums[i] - 1]) {
-                ans.push_back(nums[i]); 
-                break;
+    vector<int> ans;
+    int n = arr.size();
+
+    vector<int> indies(n); // 记录arr中元素的位置
+    for (int i = 0; i < n; ++i) indies[i] = i+1;
+
+    // 根据arr中元素从大到小排序， 最大的元素位置排在最前面， 次大的元素位置排在第二位...
+    sort(indies.begin(), indies.end(), [&arr](const int i, const int j){
+        return arr[i-1] > arr[j-1];
+    });
+
+    for (int i : indies) {  // 每次都找到还没排序好的最大元素
+        for (int f : ans) { // 前面的操作(翻转)可能让这次最大元素的位置发生了改变
+            if (i <= f) {
+                i = f+1-i;
             }
-
-            // 如果又访问到重复的元素
-            if (!ans.empty() && nums[i]==ans[0]) break;
-            swap(nums[i], nums[nums[i]-1]);
         }
-    }
-
-    for (int i = 0; i < n; ++i) {
-        if (nums[i] != i+1) {
-            ans.push_back(i+1);
-            break;
-        }
+        ans.push_back(i); // 表示把最大元素放到最前面
+        ans.push_back(n--);// 将最大元素放到最后面
     }
     return ans;
 }
 
 
-int main(void)
-{   
+int main() {
+    
+    vector<int> v{3, 2, 4, 1};
+    auto ans = pancakeSort(v);
 
+    for (int a : v) {
+        cout << a << " ";
+    }
+    cout << endl;
+
+    for (int i : ans) cout << i << " ";
 }

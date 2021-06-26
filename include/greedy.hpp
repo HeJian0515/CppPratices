@@ -271,10 +271,9 @@ bool canPlaceFlowers(vector<int>& flowerbed, int n)
         }
     }
 
-    // [end] 末尾为0的情况
-    if (prev < 0) {
+    if (prev < 0) { // 整个数组都为0
         cnt += (m + 1) / 2;
-    } else {
+    } else { // 考虑了最后一个数为0和不为0的情况
         cnt += (m - prev - 1) / 2;
     }
     return cnt >= n;
