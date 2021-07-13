@@ -1,47 +1,56 @@
-#include <iostream>
-#include <cmath>
-#include <vector>
-#include <algorithm>
+#include <bits/stdc++.h>
+
 using namespace std;
 
+string addString(const string& num1, const string& num2) {
+    int i = num1.size()-1, j = num2.size()-1, add = 0;
+    string ans;
+    while (i >= 0 || j >= 0 || add != 0) {
+        int x = i >= 0 ? num1[i]-'0' : 0;
+        int y = j >= 0 ? num2[j]-'0' : 0;
+        int result = x + y + add;
+        ans.push_back(result % 10 + '0');
+        add = result / 10;
+        --i;
+        --j;
+    }
+    reverse(ans.begin(), ans.end());
+    return ans;
+}
 
+string multiply(string num1, string num2) {
+    if (num1 == "0" || num2 == "0") {
+        return "0";
+    }
 
-
-vector<int> pancakeSort(vector<int>& arr)
-{
-    vector<int> ans;
-    int n = arr.size();
-
-    vector<int> indies(n); // 记录arr中元素的位置
-    for (int i = 0; i < n; ++i) indies[i] = i+1;
-
-    // 根据arr中元素从大到小排序， 最大的元素位置排在最前面， 次大的元素位置排在第二位...
-    sort(indies.begin(), indies.end(), [&arr](const int i, const int j){
-        return arr[i-1] > arr[j-1];
-    });
-
-    for (int i : indies) {  // 每次都找到还没排序好的最大元素
-        for (int f : ans) { // 前面的操作(翻转)可能让这次最大元素的位置发生了改变
-            if (i <= f) {
-                i = f+1-i;
-            }
+    string ans = "0";
+    int m = num1.size(), n = num2.size();
+    for (int i = n-1; i >= 0; --i) {
+        string curr;
+        int add = 0;
+        for (int j = n-1; j > i; --j) {
+            curr.push_back(0);
         }
-        ans.push_back(i); // 表示把最大元素放到最前面
-        ans.push_back(n--);// 将最大元素放到最后面
+        int y = num2[i] - '0';
+
+        for (int j = m-1; j >= 0; --j) {
+            int x = num1[j] - '0';
+            int product = x * y + add;
+            curr.push_back(product % 10);
+            add = product / 10;
+        }
+        while (add != 0) {
+            curr.push_back(add % 10);
+            add /= 10;
+        }
+
+        reverse(curr.begin(), curr.end());
+        for(auto& c : curr) c += '0';
+        ans = addString(ans, curr);
     }
     return ans;
 }
 
-
-int main() {
-    
-    vector<int> v{3, 2, 4, 1};
-    auto ans = pancakeSort(v);
-
-    for (int a : v) {
-        cout << a << " ";
-    }
-    cout << endl;
-
-    for (int i : ans) cout << i << " ";
+int main() {    
+    cout << multiply("123", "456");
 }

@@ -12,6 +12,16 @@
 #include <cmath>
 using namespace std;
 
+struct TreeNode {
+  int val;
+  TreeNode *left;
+  TreeNode *right;
+  TreeNode() : val(0), left(nullptr), right(nullptr) {}
+  TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+  TreeNode(int x, TreeNode *left, TreeNode *right)
+      : val(x), left(left), right(right) {}
+};
+
 namespace _63dp {  //! 63. 不同路径 II
 
 int uniquePathsWithObstacles(vector<vector<int>>& obstacleGrid) {
@@ -531,6 +541,29 @@ int minimumDeleteSum(const string& s1, const string& s2)
 }
 
 
+//!===================最长回文子序列=========================
+namespace _516longestPalindromeSubseq {
+int longestPalindromeSubseq(string s)
+{
+    int n = s.size();
+    vector<vector<int>> dp(n, vector<int>(n, 0));
+    for (int i = 0; i < n; ++i) {
+        dp[i][i] = 1;
+    }
+
+    for (int i = n-1; i >= 0; --i) {
+        for (int j = i+1; j < n; ++j) {
+            if (s[i] == s[j]) {
+                dp[i][j] = dp[i+1][j-1]+2;
+            } else {
+                dp[i][j] = max(dp[i+1][j], dp[i][j-1]);
+            }
+        }
+    }
+    return dp[0][n-1];
+}
+}
+
 //!================================ 字符串编辑 ==================================
 
 //*将s1转换为s2所用的最少操作数
@@ -659,13 +692,14 @@ namespace _10isMatch
 //      if matches(s[i], p[j]) dp[i][j] = dp[i-1][j-1]
 //      else false
 // else
-//      if match(s[i], p[j-1]) dp[i][j] = dp[i-1][j] or dp[i][j-2] 要么丢弃s[i]要么丢弃p[i-1]*
+//      if match(s[i], p[j-1]) dp[i][j] = dp[i-1][j] or dp[i][j-2] 要么丢弃s[i]要么丢弃p[j-1]*
 //      else dp[i][j] = dp[i][j-2];
 bool isMatch(string s, string p)
 {
     int m = s.size(), n = p.size();
     vector<vector<char>> dp(m+1, vector<char>(n+1, false));
     dp[0][0] = true;
+    // 以1开始
     auto matches = [&](const int i, const int j) {
         if (i == 0) {
             return false;
@@ -679,9 +713,9 @@ bool isMatch(string s, string p)
     for (int i = 0; i <= m; ++i) {
         for (int j = 1; j <= n; ++j) {
             if (p[j-1] == '*') {
-                dp[i][j] |= dp[i][j-2];
+                dp[i][j] |= dp[i][j-2]; // 忽略'*'
                 if (matches(i, j-1)) {
-                    dp[i][j] |= dp[i-1][j];
+                    dp[i][j] |= dp[i-1][j]; // 继续使用'*'前面的那个字母
                 }
             } else {
                 if (matches(i, j)) {
@@ -720,3 +754,63 @@ int minPathSum(vector<vector<int>>& grid)
     return dp[m-1][n-1];
 }
 }
+
+//!==================================打家劫舍======================================
+namespace __198rob {
+// dp[i], 抢劫[0, ..., i]能获得的最大值
+int rob(vector<int>& nums) {
+    if (nums.size() == 0) return 0;
+    if (nums.size() == 1) return nums[0];
+    vector<int> dp(nums.size());
+    dp[0] = nums[0];
+    dp[1] = max(nums[0], nums[1]);
+    for (int i = 2; i < nums.size(); ++i) {
+        dp[i] = max(dp[i-2] + nums[i], dp[i-1]);
+    }
+    return dp.back();
+}
+}
+
+namespace __213rob {
+// 198rob状态压缩得到
+int robRange(vector<int>& nums, int start, int end) {
+    int first = nums[start], second = max(nums[start], nums[start+1]);
+    for (int i = start+2; i <= end; ++i) {
+        int temp = second;
+        second = max(first+nums[i], second);
+        first = temp;
+    }
+    return second;
+}
+
+int rob(vector<int>& nums) {
+    int len = nums.size();
+    if (len == 1) {
+        return nums[0];
+    } else if (len == 2) {
+        return max(nums[0], nums[1]);
+    }
+    return max(robRange(nums, 0, len-2), robRange(nums, 1, len-1));
+}
+}
+
+namespace _337rob {
+//! f(o)强o节点，g(o)不强o节点
+//* f(o) = g(l) + g(r); g(o) = f(l) + f(r)
+
+unordered_map<TreeNode*, int> f, g;
+void dfs(TreeNode* node) {
+    if (!node) return;
+
+    dfs(node->left);
+    dfs(node->right);
+    f[node] = node->val + g[node->left] + g[node->right];
+    g[node] = f[node->left] + f[node->right];
+}
+
+int rob(TreeNode* root) {
+    dfs(root);
+    return max(f[root], f[root]);
+}
+}
+

@@ -7,6 +7,8 @@
 #include <cmath>
 #include <cstdlib>
 #include <set>
+#include <stack>
+#include <queue>
 using namespace std;
 
 namespace _88merge 
@@ -424,4 +426,77 @@ bool containsNearbyAlmostDuplicate(vector<int>& nums, int k, int t)
     return false;
 }
 
+}
+
+//***************************接雨水************************
+namespace _42trap{
+int trap(vector<int>& height) {
+    int n = height.size();
+    if (n == 0) return 0;
+
+    vector<int> leftMax(n);
+    leftMax[0] = height[0];
+    for (int i = 1; i < n; ++i) {
+        leftMax[i] = max(leftMax[i-1], height[i]);
+    }
+
+    vector<int> rightMax(n);
+    rightMax[n-1] = height[n-1];
+    for (int i = n-2; i >= 0; --i) {
+        rightMax[i] = max(rightMax[i+1], height[i]);
+    }
+
+    int ans = 0;
+    for (int i = 0; i < n; ++i) {
+        ans += min(leftMax[i], rightMax[i]) - height[i];
+    }
+
+    return ans;
+}
+//****************************************************************************
+namespace __stack {
+int trap(vector<int>& height) {
+    int ans = 0;
+    stack<int> stk;
+    int n = height.size();
+    for (int i = 0; i < n; ++i) {
+        while (!stk.empty() && height[i] > height[stk.top()]) {
+            int top = stk.top(); stk.pop();
+            if (stk.empty()) break;
+
+            int left = stk.top();
+            int currWidth = i -left -1;
+            int currHeight = min(height[left], height[i]) - height[top];
+            ans += currWidth * currHeight;
+        }
+        stk.push(i);
+    }
+
+    return ans;
+}
+//*****************************************************************************
+namespace _twoPointer {
+int trap(vector<int>& height) {
+    int left = 0, right = height.size()-1;
+    int ans = 0;
+    int left_max = 0, right_max = 0;
+    while (left < right) {
+        left_max = max(left_max, height[left]);
+        right_max = max(right_max, height[right]);
+
+        // left和right中的一个必然指向遍历过元素的最大值
+        // 若h[left] < h[right] 则++left直到h[left]>h[right]此时h[left]为遍历元素的最大值
+        // 若h[left] > h[right] 则--right直到h[left]<h[right]此时h[right]为遍历元素的最大值
+        if (height[left] < height[right]) { //? 必有left_max < right_max
+            ans += left_max - height[left];
+            ++left;
+        } else {
+            ans += right_max - height[right];
+            --right;
+        }
+    }
+    return ans;
+}
+}
+}
 }

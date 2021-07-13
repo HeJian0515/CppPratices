@@ -7,6 +7,44 @@
 #include <climits>
 using namespace std;
 
+// 栈实现队列
+namespace _232MyQueue {
+class MyQueue {
+    stack<int> s1, s2;
+
+void in2out() {
+    if (s2.empty()) {
+        while (!s1.empty()) {
+            s2.push(s1.top());
+            s1.pop();
+        }
+    }
+}
+public:
+    MyQueue() {
+    }
+
+    void push(int x) {
+        s1.push(x);
+    }
+
+    int pop() {
+        in2out();
+        int ret = s2.top();
+        s2.pop();
+        return ret;
+    }
+
+    int peek() {    
+        in2out();
+        return s2.top();
+    }
+
+    bool empty() {  
+        return s1.empty() && s2.empty();
+    }
+};
+}
 
 namespace _84largestRectangleInHistogram {
 int largestRectangleArea(vector<int>& heights) {
@@ -158,8 +196,7 @@ string computeString(string str) {
 }
 
 
-//!======================================================
-//! 单调栈
+//!单调栈======================================================
 //? 去除字符串中重复的字母，并保证返回的字典序最小
 //? "bcabc" ---> "abc"; "cbacdcbc"  ---> "acdb"
 namespace _316removeDuplicateLetters{
@@ -295,4 +332,111 @@ int nextGreaterElement(int n) {
 }   
 }
 
+namespace _739dailyTemperatures
+{
+//! 正向
+vector<int> dailyTemperatures(vector<int>& temperatures) {
+    int n = temperatures.size();
+    vector<int> ans(n);
+    stack<int> s;
 
+    for(int i = 0; i < n; ++i) {
+        while (!s.empty() && temperatures[s.top()] < temperatures[i]) {
+            ans[s.top()] = i - s.top();
+            s.pop();
+        }
+        s.push(i);
+    }
+    return ans;
+}
+//! 反向
+namespace _1 {
+vector<int> dailyTemperatures(vector<int>& temperatures) {
+    int n = temperatures.size();
+    vector<int> ans(n);
+    stack<int> s;
+
+    for (int i = n-1; i >=0 ; ++i) {
+        //* 保持栈中的元素比遍历到的元素大
+        while (!s.empty() && temperatures[s.top()] <= temperatures[i]) {
+            s.pop();
+        }
+       if (!s.empty()) ans[i] = s.top() - i;
+       s.push(i);
+    }
+    return ans;
+}   
+}
+}
+
+
+//* 柱形图中的最大矩形*********************************************
+namespace _84largestRectangleArea {
+int largestRectangleArea(vector<int>& heights) {
+    int n = heights.size();
+    // 右边界
+    vector<int> right(n, n);
+    stack<int> s1;
+    for (int i = 0; i < n; ++i) {
+        while (!s1.empty() && heights[s1.top()] > heights[i]) {
+            right[s1.top()] = i;
+            s1.pop();
+        }
+        s1.push(i);
+    }
+
+    // 左边界
+    vector<int> left(n, -1);
+    stack<int>().swap(s1);
+    for (int i = n-1; i >= 0; --i) {
+        while (!s1.empty() && heights[s1.top()] > heights[i]) {
+            left[s1.top()] = i;
+            s1.pop();
+        }
+        s1.push(i);
+    }
+
+    int ans = 0;
+    for (int i = 0; i < n; ++i) {
+        ans = max(ans, heights[i] * (right[i] - left[i] - 1));
+    }
+
+    return ans;
+}
+//*************************************************************************
+namespace _1 {
+int largestRectangleArea(vector<int>& heights) {
+    int n = heights.size();
+    vector<int> left(n), right(n, n);
+
+    stack<int> stk;
+    for (int i = 0; i < n; ++i) {
+        while (!stk.empty() && heights[stk.top()] >= heights[i]) {
+            right[stk.top()] = i;
+            stk.pop();
+        }
+        left[i] = stk.empty() ? -1 : stk.top();
+        stk.push(i);
+    }
+
+    int ans = 0;
+    for (int i = 0; i < n; ++i) {
+        ans = max(ans, (right[i]-left[i]-1)*heights[i]);
+    }
+    return ans;
+}
+}
+
+}
+
+//* 矩阵里的最大矩形***********************************************
+namespace _85maximalRectangle {
+int maximalRectangle(vector<vector<char>>& matrix) {
+    int m = matrix.size();
+    if (m == 0) return 0;
+    int n = matrix[0].size();
+    vector<vector<int>> left(m, vector<int>(n, 0));
+
+    //for (int i = 0; i < m; ++i)
+}
+}

@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <vector>
 #include <unordered_map>
+#include <climits>
 
 using namespace std;
 
@@ -45,5 +46,67 @@ namespace _350Array { //! 350. 两个数组的交集 II
         }
         return res;
     }
+}
+
+namespace _410splitArray {
+//! 将一个数组分成m段非空连续子数组， 使m个子数组和的最大值最小
+//* 动态规划 f[i][j]表示将数组的前i个数分割为j段，所能得到的最大连续子数组和的最小值
+//* f[i][j] = min|(k=0:i-1){max(f[k][j-1], sub(k+1, i))};
+int splitArray(vector<int>& nums, int m) {
+    int n = nums.size();
+    vector<vector<long long>> f(n+1, vector<long long>(m+1, LLONG_MAX));
+    vector<long long> sub(n+1);
+
+    for (int i = 0; i < n; ++i) sub[i+1] = sub[i] + nums[i];
+    f[0][0] = 0;
+    for (int i = 1; i <= n; ++i) {
+        for (int j = 1; j <= min(i, m); ++j) {
+            for (int k = 0; k < i; ++k) {
+                f[i][j] = min(f[i][j], max(f[k][j-1], sub[i]-sub[k]));
+            }
+        }
+    }
+    return (int)f[n][m];
+}
+
+namespace _1{
+//! 贪心——找一个x验证是否存在一种分割方案,满足其最大分割子数组和不超过x
+//* 从前到后遍历数组，用sum表示当前分割子数组的和，cnt表示分割出的子数组的数量
+//* 每当sum加上当前值超过了x, j把当前值作为新的开头cnt加一
+bool check(vector<int>& nums, int x, int m) {
+    long long sum = 0;
+    int cnt = 1;
+    for (int i = 0; i < nums.size(); ++i) {
+        if (sum + nums[i] > x) {
+            ++cnt;
+            sum = nums[i];
+        } else {
+            sum += nums[i];
+        }
+    }
+    return cnt <= m;
+}
+
+int splitArray(vector<int>& nums, int m) {
+    long long l = 0, r = 0;
+    for (int i = 0; i < nums.size(); ++i) {
+        r += nums[i];
+        if (l < nums[i]) {
+            l = nums[i];
+        }
+    }
+
+    while(l < r) {
+        long long mid = l + (r - l)/2;
+        if (check(nums, mid, m)) {
+            r = mid;
+        } else {
+            l = mid + 1;
+        }
+    }
+    return l;
+}
+}
+
 }
 

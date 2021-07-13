@@ -4,6 +4,7 @@
 #include <limits.h>
 #include <set>
 #include <iostream>
+#include <unordered_map>
 using namespace std;
 
 
@@ -530,4 +531,108 @@ int main(void)
     
     return 0;
 }
+}
+
+namespace _659isPossible {
+bool isPossible(vector<int>& nums) {
+    // 队列里保存的是以x结尾的个个子序列的长度
+    unordered_map<int, priority_queue<int, vector<int>, greater<int>>> mp;
+    for (auto& x : nums) {
+        // 如没有以x结尾的子序列
+        if (mp.find(x) == mp.end()) {
+            mp[x] = priority_queue<int, vector<int>, greater<int>>();
+        }
+        
+        // 寻找是否有x-1结尾的子序列
+        if (mp.find(x-1) != mp.end()) {
+            int prevLen = mp[x-1].top();
+            mp[x - 1].pop();
+            if (mp[x-1].empty()) {
+                mp.erase(x-1);
+            }
+            mp[x].push(prevLen + 1);
+        } else {
+            mp[x].push(1);
+        }
+    }
+
+    for (const auto& p : mp) {
+        if (p.second.top() < 3) {
+            return false;
+        }
+    }
+    return true;
+}
+
+namespace _1 {
+bool isPossible(vector<int>& nums) {
+    unordered_map<int, int> cntMap;
+    unordered_map<int, int> endMap;
+    for (int x : nums) ++cntMap[x];
+
+    for (int x : nums) {
+        int cnt = cntMap[x];
+        if (cnt > 0) {
+            if (endMap.count(x-1) && endMap[x-1] > 0) {
+                --cntMap[x];
+                --endMap[x-1];
+                ++endMap[x];
+            } else {
+                int cnt1 = cntMap[x+1];
+                int cnt2 = cntMap[x+2];
+                if (cnt1 > 0 && cnt2 > 0) {
+                    --cntMap[x];
+                    --cntMap[x+1];
+                    --cntMap[x+2];
+                    ++endMap[x+2];
+                } else {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+}
+}
+
+
+namespace _mergeKsortedArray {
+struct Node {
+    int val, row, col;
+    Node(int v, int r, int c) : val(v), row(r), col(c) 
+    {}
+};
+
+struct compare {
+    bool operator()(const Node& node1,const Node& node2) const {
+        return node1.val > node2.val; // 小顶堆
+    }
+};
+
+vector<int> MergeArray(vector<vector<int>>& nums) {
+    vector<int> res;
+    priority_queue<Node, vector<Node>, compare> q;
+    for (int i = 0; i < nums.size(); ++i) {
+        Node node(nums[i][0], i, 0);
+        q.emplace(node);
+    }
+
+    while (!q.empty()) {
+        Node node = q.top();
+        res.push_back(node.val);
+        q.pop();
+
+        // 开始向堆中添加元素，判断堆顶元素是不是当前数组的最后一个元素
+        if (node.col == (nums[node.row].size() - 1))
+            continue;
+        else {
+            Node node1(nums[node.row][node.col+1], node.row, node.col+1);
+            q.emplace(node1);
+        }
+    }
+    
+    return res;
+}
+
 }

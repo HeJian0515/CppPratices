@@ -349,3 +349,65 @@ TreeNode* deleteNode(TreeNode* root, int key) {
     return root;
 }
 }
+
+
+// 二叉树的最近公共祖先
+namespace _236lowestCommonAncestor
+{
+TreeNode* ans;
+// 以x为根节点的树包不包含p或q
+bool dfs(TreeNode* x, TreeNode* p, TreeNode* q) {
+    if ( x == nullptr) return false;
+    bool lson = dfs(x->left, p, q);
+    bool rson = dfs(x->right, p, q);
+
+    if ((lson && rson) || ( (x == p || x == q) && (lson || rson)) ) {
+        ans = x;
+    }
+    return lson || rson || x == p || x == q;
+
+}
+TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) 
+{
+    dfs(root, p, q);
+    return ans;
+}
+
+// 找到每个节点的父节点， 问题变成两条链表相交的问题
+namespace __Hash {
+unordered_map<TreeNode*, TreeNode*> fa;
+unordered_map<TreeNode*, bool> vis;
+
+// 记录结点的父节点
+void dfs(TreeNode* root) {
+    if (root->left != nullptr) {
+        fa[root->left] = root;
+        dfs(root->left);
+    }
+    if (root->right != nullptr) {
+        fa[root->right] = root;
+        dfs(root->right);
+    }
+}
+
+TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) 
+{
+    fa[root] = nullptr;
+    dfs(root);
+
+    // 将p到根节点的路径上的每个点都记录下来
+    while (p != nullptr) {
+        vis[p] = true;
+        p = fa[p];
+    }
+
+    // q一路走向根节点，如果碰到已经标记过的结点，就返回
+    while (q != nullptr) {
+        if (vis[q]) return q;
+        q = fa[q];
+    }
+    return nullptr;
+}
+
+}
+}

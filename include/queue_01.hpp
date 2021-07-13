@@ -6,6 +6,37 @@
 
 using namespace std;
 
+// 队列实现栈
+namespace _225MyStack {
+class MyStack {
+    queue<int> q1;
+    queue<int> q2;
+public:
+    void push(int x) {
+        q2.push(x);
+        while (!q1.empty()) {
+            q2.push(q1.front());
+            q1.pop();
+        }
+        q1.swap(q2);
+    }
+
+    int pop() {
+        int ret = q1.front();
+        q1.pop();
+        return ret;
+    }
+
+    int top() {
+        return q1.front();
+    }
+
+    bool empty() {
+        return q1.empty();
+    }
+}
+}
+
 namespace _239MaxValueWindow {
     class MonotonicQueue {
         private:

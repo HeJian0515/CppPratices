@@ -130,6 +130,7 @@ bool canFinish(int numCourses, vector<vector<int>>& prerequisites)
     edges.resize(numCourses);
     indeg.resize(numCourses);
 
+    // 构建图
     for (const vector<int>& info : prerequisites) {
         edges[info[1]].push_back(info[0]); // 1 -- > 0
         ++indeg[info[0]]; // 0 入度+1
