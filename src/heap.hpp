@@ -19,10 +19,10 @@ public:
     void push(int k)
     {
         heap.push_back(k);
-        swim(heap.back());
+        swim(heap.size()-1);
     }
 
-    // 删除最大值：把最大值挪到开头，然后下沉
+    // 删除最大值：把最后一位数挪到开头，然后下沉
     void pop()
     {
         heap[0] = heap.back();

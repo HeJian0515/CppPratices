@@ -1,6 +1,0 @@
-#pragma
-
-namespace offer {
-
-
-}

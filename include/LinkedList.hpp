@@ -2,6 +2,7 @@
 #include <numeric>
 #include <vector>
 #include <iostream>
+#include <queue>
 using namespace std;
 
 struct ListNode {
@@ -149,6 +150,7 @@ ListNode* reverseLinkedList(ListNode* head, int n) {
 }
 }
 
+// 烧饼排序
 namespace _968pancakeSort
 {
 vector<int> res;
@@ -199,5 +201,176 @@ vector<int> pancakeSort_1(vector<int>& arr)
         ans.push_back(n--);// 将最大元素放到最后面
     }
     return ans;
+}
+}
+
+//!=========================================合并k个升序链表============================================
+namespace _23mergeKLists {
+
+ListNode* mergeTwoLists(ListNode* l1, ListNode* l2) {
+   if (l1 == nullptr || l2 == nullptr) return l1 ? l1 : l2;
+
+   ListNode head, *tail = &head, *l1Ptr = l1, *l2Ptr = l2;
+   while (l1Ptr && l2Ptr) {
+       if (l1Ptr->val < l2Ptr->val) {
+           tail->next = l1Ptr;
+           l1Ptr = l1Ptr->next;
+       } else {
+           tail->next = l2Ptr;
+           l2Ptr = l2Ptr->next;
+       }
+       tail = tail->next;
+   }
+   tail->next = (l1Ptr ? l1Ptr : l2Ptr);
+   return head.next;
+}
+
+ListNode* mergeKLists(vector<ListNode*>& lists) {
+    ListNode* ans = nullptr;
+    for (int i = 0; i < lists.size(); ++i) {
+        ans = mergeTwoLists(ans, lists[i]);
+    }
+    return ans;
+}
+
+//*=======================分治法============================
+namespace _1 {
+ListNode* merge(vector<ListNode*>& lists, int l, int r) {
+    if (l == r) return lists[l];
+    if (l > r) return nullptr;
+    int mid = l + (r - l)/2;
+    return mergeTwoLists(merge(lists, l, mid), merge(lists, mid+1, r));
+}
+
+ListNode* mergeKLists(vector<ListNode*>& lists) {
+    return merge(lists, 0, lists.size()-1);
+}
+}
+
+//*=====================优先队列==================================
+namespace _2 {
+struct Status {
+    int val;
+    ListNode* ptr;
+    bool operator < (const Status& rhs) const {
+        return val > rhs.val;
+    }
+};
+
+priority_queue<Status> q;
+
+ListNode* mergeKLists(vector<ListNode*>& lists) {
+    for (auto node : lists) {
+        if (node) q.push({node->val, node});
+    }
+
+    ListNode head, *tail = &head;
+    while (!q.empty()) {
+        auto f = q.top(); q.pop(); // 取出最小值
+        tail->next = f.ptr;
+        tail = tail->next;
+        if (f.ptr->next) q.push({f.ptr->next->val, f.ptr->next});
+    }
+    return head.next;
+}
+}
+}
+
+//! =========================链表排序============================================
+namespace _148sortList {
+
+    ListNode* merge(ListNode* a, ListNode* b) {
+        if (a == nullptr || b == nullptr) return a ? a : b;
+        ListNode head, *tail = &head, *aCur = a, *bCur = b;
+
+        while (aCur && bCur) {
+            if (aCur->val < bCur->val) {
+                tail->next = aCur;
+                aCur = aCur->next;
+            } else {
+                tail->next = bCur;
+                bCur = bCur->next;
+            }
+            tail = tail->next;
+        }
+        tail->next = (aCur ? aCur : bCur);
+
+        return head.next;
+    }
+
+    ListNode* mergeSort(ListNode* head, ListNode* tail) {
+        if (head == nullptr) return head;
+        if (head->next == tail) {
+            head->next = nullptr; //! 使head成为一个具有一个节点的链表
+            return head;
+        }
+        ListNode *slow = head, *fast = head;
+        while (fast != tail) {
+            slow = slow->next;
+            fast = fast->next;
+            if (fast != tail) {
+                fast = fast->next;
+            }
+        }
+        ListNode *mid = slow;
+        //! 左闭右开
+        return merge(mergeSort(head, mid), mergeSort(mid, tail));
+    }
+
+    ListNode* sortList(ListNode* head) {
+        return mergeSort(head, nullptr);
+    }
+
+//!===============自底向上================================================
+namespace _1 {
+    ListNode* sortList(ListNode* head) {
+        if (head == nullptr) return head;
+
+        int len = 0;
+        ListNode* node = head;
+        while (node) {
+            ++len;
+            node = node->next;
+        }
+
+        ListNode dummy(0, head);
+
+        for (int subLen = 1; subLen < len; subLen <<= 1) {
+            ListNode* prev = &dummy, *curr = dummy.next;
+            while (curr) {
+                // 构建head1为头结点，长度为subLen的链表
+                ListNode* head1 = curr;
+                for (int i = 1; i < subLen && curr->next; ++i) {
+                    curr = curr->next;
+                }
+
+                // 构建head2为头节点，长度为subLen的链表
+                ListNode* head2 = curr->next;
+                curr->next = nullptr;
+                curr = head2;
+                for (int i = 1; i < subLen && curr && curr->next; ++i) {
+                    curr = curr->next;
+                }
+
+                // 记录下一个长度为subLen的头节点
+                ListNode* next = nullptr;
+                if (curr) {
+                    next = curr->next;
+                    curr->next = nullptr;
+                }
+
+                // 合并排好序的链表
+                ListNode* merged = merge(head1, head2);
+                // 移动到排序好的链表尾部
+                prev->next = merged;
+                while (prev->next) {
+                    prev = prev->next;
+                }
+                curr = next; // 指向未排序的节点
+            }
+        }
+
+        return dummy.next;
+    }
 }
 }

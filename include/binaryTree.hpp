@@ -4,6 +4,7 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <queue>
 
 using namespace std;
 struct TreeNode {
@@ -409,5 +410,50 @@ TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q)
     return nullptr;
 }
 
+}
+}
+
+
+//* 完全二叉树的判定
+namespace _958isCompleteTree {
+bool isCompleteTree(TreeNode* root) {
+    queue<TreeNode*> q;
+    bool reachNull = false;
+    q.push(root);
+
+    while (!q.empty()) {
+        TreeNode* curr = q.front();
+        q.pop();
+        if (curr == nullptr) {
+            reachNull = true;
+            continue;
+        } else {
+            // 发现了空节点，右发现了非空节点
+            if (reachNull) {
+                return false;
+            }
+            // 继续遍历左右节点
+            q.push(curr->left);
+            q.push(curr->right);
+        }
+    }
+    return true;
+}
+
+namespace _1 {
+bool isCompleteTree(TreeNode* root) {
+    vector<pair<TreeNode*, int>> nodes;
+    nodes.push_back({root, 1});
+    int i = 0;
+    while (i < nodes.size()) {
+        auto node = nodes[i++];
+        if (node.first != nullptr) {
+            if (nodes.back().second != nodes.size()) return false;
+            nodes.push_back({node.first->left, node.second*2});
+            nodes.push_back({node.first->right, node.second*2 + 1});
+        }
+    }
+    return nodes.back().second == nodes.size();
+}
 }
 }
