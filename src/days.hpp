@@ -541,6 +541,8 @@ int main() {
 }
 
 //! 滑动窗口===================================================
+namespace _9 {
+
 constexpr int N = 400005;
 int n, m;
 int a[N];
@@ -576,6 +578,42 @@ int main() {
     }
 
     cout << ans;
+}
+}
+
+//! 转化成最大连续上升子序列问题，子序列里面的元素可以不移动，
+//! 子序列之外的元素需要移动插入到子序列中去，所以答案就是序列总长度减去最大连续上升子序列长度。
+namespace _10 {
+
+using ll = long long;
+int n, a[100005], b;
+map<int, int> mp;
+
+int main() {
+    int i, j, ans = 0, cnt = 0;
+    cin >> n;
+    for (int i = 1; i <= n; ++i) {
+        cin >> a[i];
+    }
+    for (int i = 1; i <= n; ++i) {
+        cin >> b;
+        mp[b] = i;
+    }
+    for (int i = 1; i <= n; ++i) {
+        a[i] = mp[a[i]];
+    }
+
+    for (int i = 1; i <= n; ++i) {
+        // 求最大连续上升子段
+        if (a[i] > a[i-1]) {
+            ans = max(ans, ++cnt);
+        } else {
+            cnt = 1;
+        }
+    }
+    cout << n - ans;
+}
+
 }
 
 } 
