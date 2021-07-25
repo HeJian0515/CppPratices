@@ -34,44 +34,56 @@ public:
     bool empty() {
         return q1.empty();
     }
-}
+};
 }
 
+// 滑动窗口的最大值
 namespace _239MaxValueWindow {
-    class MonotonicQueue {
-        private:
-            deque<int> data;
-        public:
-            void push(int n) {
-                while(!data.empty() && data.back() < n) {
-                    data.pop_back();
-                }
-                data.push_back(n);
-            }
-
-            int max() {return data.front();}
-
-            void pop(int n) {
-                if (!data.empty() && data.front() == n) {
-                    data.pop_front();
-                }
-            }
-
-    };
-
-
-    vector<int> maxSlidingWindow(vector<int>& nums, int k) {
-        MonotonicQueue window;
-        vector<int> res;
-        for (int i = 0; i < nums.size(); ++i) {
-            if (i < k-1) { //! 先填满窗口前 k-1
-                window.push(nums[i]);
-            } else { // 窗口向前滑动
-                window.push(nums[i]);
-                res.push_back(window.max());
-                window.pop(nums[i-k+1]);
-            }
-        }
-        return res;
+// 优先队列
+vector<int> maxSlidingWindow(vector<int>& nums, int k) {
+    int n = nums.size();
+    priority_queue<pair<int, int>> q;
+    for (int i = 0; i < k; ++i) {
+       q.emplace(nums[i], i);
     }
+
+    vector<int> ans = {q.top().first};
+    for (int i = k; i < n; ++i) {
+        q.emplace(nums[i], i);
+        // 弹出不在窗口内的元素
+        while (q.top().second <= i-k) {
+            q.pop();
+        }
+        ans.push_back(q.top().first);
+    }
+    return ans;
+}
+
+namespace __deque {
+vector<int> naxSlidingWindow(vector<int>& nums, int k) {
+    int n = nums.size();
+    deque<int> q;
+
+    // 保证队列内元素单调递减
+    for (int i = 0; i < k; ++i) {
+        while (!q.empty() && nums[i] >= nums[q.back()]) {
+            q.pop_back();
+        }
+        q.push_back(i);
+    }
+
+    vector<int> ans{nums[q.front()]};
+    for (int i = k; i < n; ++i) {
+        while (!q.empty() && nums[i] >= nums[q.back()]) {
+            q.pop_back();
+        }
+        q.push_back(i);
+        while (q.front() <= i- k) {
+            q.pop_front();
+        }
+        ans.push_back(nums[q.front()]);
+    }
+    return ans;
+}
+}
 }

@@ -1,56 +1,36 @@
 #include <bits/stdc++.h>
-
 using namespace std;
 
-string addString(const string& num1, const string& num2) {
-    int i = num1.size()-1, j = num2.size()-1, add = 0;
-    string ans;
-    while (i >= 0 || j >= 0 || add != 0) {
-        int x = i >= 0 ? num1[i]-'0' : 0;
-        int y = j >= 0 ? num2[j]-'0' : 0;
-        int result = x + y + add;
-        ans.push_back(result % 10 + '0');
-        add = result / 10;
-        --i;
-        --j;
+int main() {
+    int n;
+    cin >> n;
+    list<int> v;
+    for (int i = 0, tmp = 0; i < n; ++i) {
+       cin >> tmp;
+       v.push_back(tmp);
     }
-    reverse(ans.begin(), ans.end());
-    return ans;
-}
+    v.erase(unique(v.begin(), v.end()), v.end());
 
-string multiply(string num1, string num2) {
-    if (num1 == "0" || num2 == "0") {
-        return "0";
+   int minNum = INT_MAX;
+   for (int i : v) {
+       if (i != 0) minNum = min(minNum, i);
+   }
+
+    int m = 0;
+    vector<int> ans;
+    while (minNum != INT_MAX) {
+        int minNum2 = INT_MAX;
+        for (int& i : v) {
+            if (i != 0) {
+                i -= minNum;
+                if (i != 0) minNum2 = min(minNum2, i);
+            }
+        }
+        minNum = minNum2;
+        v.erase(unique(v.begin(), v.end()), v.end());
+        ans.push_back(v.size());
+        ++m;
     }
-
-    string ans = "0";
-    int m = num1.size(), n = num2.size();
-    for (int i = n-1; i >= 0; --i) {
-        string curr;
-        int add = 0;
-        for (int j = n-1; j > i; --j) {
-            curr.push_back(0);
-        }
-        int y = num2[i] - '0';
-
-        for (int j = m-1; j >= 0; --j) {
-            int x = num1[j] - '0';
-            int product = x * y + add;
-            curr.push_back(product % 10);
-            add = product / 10;
-        }
-        while (add != 0) {
-            curr.push_back(add % 10);
-            add /= 10;
-        }
-
-        reverse(curr.begin(), curr.end());
-        for(auto& c : curr) c += '0';
-        ans = addString(ans, curr);
-    }
-    return ans;
-}
-
-int main() {    
-    cout << multiply("123", "456");
+    cout << m << '\n';
+    for (int i : ans) cout << m << ' ';
 }

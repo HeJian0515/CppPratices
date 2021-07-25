@@ -2,7 +2,7 @@
     "configurations": [
         {
             "name": "MinGW64",
-            "compilerPath": "D:/mingw64/bin/g++.exe",
+            "compilerPath": "D:/LLVM/bin/g++.exe",
             "includePath": [
                 "${workspaceFolder}/**"
             ],
