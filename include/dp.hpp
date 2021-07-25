@@ -814,3 +814,30 @@ int rob(TreeNode* root) {
 }
 }
 
+//! 剑指offer60投掷骰子
+namespace _offer60 {
+    vector<double> dicesProbability(int n) {
+        vector<vector<int>> dp(n+1, vector<int>(6*n+1));
+        for (int i = 1; i <= 6; ++i) {
+            dp[1][i] = 1;
+        }
+
+        for (int i = 2; i <= n; ++i) {
+            for (int j = i; j <= 6*i; ++j) {
+                for (int cur = 1; cur <= 6; ++cur) {
+                    if (j - cur <= 0) {
+                        break;
+                    }
+                    dp[i][j] += dp[i-1][j-cur];
+                }
+            }
+        }
+
+        double all = 1.0 / pow(6, n);
+        vector<double> ret; ret.reserve(5*n + 1);
+        for (int i = n ; i <= 6*n; ++i) {
+            ret.push_back(dp[n][i] * all);
+        }
+        return ret;
+    }
+}
