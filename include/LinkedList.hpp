@@ -97,6 +97,7 @@ ListNode* reverseBetween(ListNode* head, int left, int right) {
 
 }
 
+// 求链表交点
 namespace _Offer52getIntersectionNode
 {
 ListNode* getIntersectionNode(ListNode *headA, ListNode *headB)

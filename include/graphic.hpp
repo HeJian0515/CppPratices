@@ -5,7 +5,7 @@
 #include <iostream>
 using namespace std;
 
-// 并查集
+//! 并查集
 namespace _684findRedundantConnection
 {
 

@@ -35,9 +35,9 @@ public:
         return q1.empty();
     }
 };
-
 }
 
+// 滑动窗口的最大值
 namespace _239MaxValueWindow {
 
 // 优先队列解法
@@ -60,8 +60,6 @@ namespace _1 {
         return ans;
     }
 }
-
-
     vector<int> maxSlidingWindow(vector<int>& nums, int k) {
         deque<int> q;
         for (int i = 0; i < k; ++i) {

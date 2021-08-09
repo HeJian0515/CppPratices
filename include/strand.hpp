@@ -176,3 +176,119 @@ string multiply(string num1, string num2) {
 }
 }
 
+
+//! 至少有K个重复字符的最长子串
+namespace _395longestSubstring {
+    int dfs(const string& s, int l, int r, int k) {
+        vector<int> cnt(26);
+        for (int i = l; i <= r; ++i) {
+            ++cnt[s[i] - 'a'];
+        }
+
+        char split = 0;
+        for (int i = 0; i < 26; ++i) {
+            if (cnt[i] > 0 && cnt[i] < k) {
+                split = i + 'a';
+                break;
+            }
+        }
+
+        if (split == 0) {
+            return r - l + 1;
+        }
+
+        int i = l;
+        int ret = 0;
+        // 按split将字符切成多段
+        while (i <= r) {
+            // 找到第一个不为split的字符
+            while (i <= r && s[i] == split) {
+                ++i;
+            }
+            if (i > r) break;
+            int start = i;
+            // 找到下一次出现的split
+            while (i <= r && s[i] != split) {
+                ++i;
+            }
+
+            int len = dfs(s, start, i-1, k);
+            ret = max(ret, len);
+        }
+        return ret;
+    }
+
+    int longestSubstring(string s, int k) {
+        int n = s.size();
+        return dfs(s, 0, n-1, k);
+    }
+//* 滑动窗口***************************************************************
+namespace _1 {
+    int longestSubstring(string s, int k) {
+        int ret = 0;
+        int n = s.size();
+        for (int t = 0; t <= 26; ++t) {
+            int l = 0, r = 0;
+            vector<int> cnt(26, 0);
+            int tot = 0; // 窗口内字符的种类
+            int less = 0; // 窗口内的字符离满足要求的差距
+            while (r < n) {
+                cnt[s[r] - 'a']++;
+                if (cnt[s[r] - 'a'] == 1) {
+                    tot++;
+                    less++;
+                }
+
+                // s[r]满足要求
+                if (cnt[s[r] - 'a'] == k) {
+                    less--;
+                }
+
+                // 窗口内字符种类大于t时
+                while (tot > t) {
+                    cnt[s[l] - 'a']--;
+                    if (cnt[s[l] - 'a'] == k-1) {
+                        less++;
+                    }
+                    if (cnt[s[l] - 'a'] == 0) {
+                        tot--;
+                        less--;
+                    }
+                    l++;
+                }
+                if (less == 0) {
+                    ret = max(ret, r - l + 1);
+                }
+                ++r;
+            }
+        }
+
+        return ret;
+    }
+}
+
+//************************************************************
+namespace _2 {
+    int longestSubstring(string s, int k) {
+        if (k <= 1) return s.size();
+        if (s.empty() || s.size() < k) return 0;
+
+        vector<int> cnt(26, 0);
+        for (char c : s) ++cnt[c - 'a'];
+
+        int i = 0;
+        //[0, i)内字符个数都大于k
+        while (i < s.size() && cnt[s[i] - 'a'] >= k) ++i;
+        if (i == s.size()) return s.size();
+
+        int l = longestSubstring(s.substr(0, i), k);
+
+        //[i0, i1)内的字符个数小于k,不可能包含在结果中
+        while (i < s.size() && cnt[s[i] - 'a'] < k) ++i;
+        int r = longestSubstring(s.substr(i), k);
+
+        return max(l, r);
+
+    }
+}
+}
