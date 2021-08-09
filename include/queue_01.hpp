@@ -34,44 +34,56 @@ public:
     bool empty() {
         return q1.empty();
     }
-}
+};
+
 }
 
 namespace _239MaxValueWindow {
-    class MonotonicQueue {
-        private:
-            deque<int> data;
-        public:
-            void push(int n) {
-                while(!data.empty() && data.back() < n) {
-                    data.pop_back();
-                }
-                data.push_back(n);
+
+// 优先队列解法
+namespace _1 {
+    vector<int> maxSlidingWindow(vector<int>& nums, int k) {
+        int n = nums.size();
+        priority_queue<pair<int, int>> q;
+        for (int i = 0; i < k; ++i) {
+            q.emplace(nums[i], i);
+        }
+        vector<int> ans{q.top().first};
+        for (int i = k; i < n; ++i) {
+            q.emplace(nums[i], i);
+            while (q.top().second <= i - k) {
+                q.pop();
             }
-
-            int max() {return data.front();}
-
-            void pop(int n) {
-                if (!data.empty() && data.front() == n) {
-                    data.pop_front();
-                }
-            }
-
-    };
+            ans.push_back(q.top().first);
+        }
+        
+        return ans;
+    }
+}
 
 
     vector<int> maxSlidingWindow(vector<int>& nums, int k) {
-        MonotonicQueue window;
-        vector<int> res;
-        for (int i = 0; i < nums.size(); ++i) {
-            if (i < k-1) { //! 先填满窗口前 k-1
-                window.push(nums[i]);
-            } else { // 窗口向前滑动
-                window.push(nums[i]);
-                res.push_back(window.max());
-                window.pop(nums[i-k+1]);
+        deque<int> q;
+        for (int i = 0; i < k; ++i) {
+            while (!q.empty() && nums[q.back()] <= nums[i]) {
+                q.pop_back();
             }
+            q.push_back(i);
         }
-        return res;
+
+        vector<int> ans{nums[q.front()]};
+        for (int i = k; i < nums.size(); ++i) {
+            while (!q.empty() && nums[q.back()] <= nums[i]) {
+                q.pop_back();
+            }
+            q.push_back(i);
+
+            while (q.front() <= i - k) {
+                q.pop_front();
+            }
+            ans.push_back(nums[q.front()]);
+        }
+
+        return ans;
     }
 }

@@ -75,29 +75,24 @@ ListNode* reverseList_it(ListNode* head) {
 
 namespace _92reverseBetween {
 
-ListNode* successor = nullptr;
-ListNode* reverseN(ListNode* head, int n) {
-    if (1 == n) {
-        // 记录第 n+1 个节点
-        successor = head->next;
-        return head;
-    }
-    // 以head->next为起点，需要反转前n-1个节点
-    ListNode* newHead = reverseN(head->next, n-1);
-
-    head->next->next = head;
-    // 让反转之后的 head 节点和后面的节点连起来
-    head->next = successor;
-    return newHead;
-}
-
+//! 反转链表中间一段
 ListNode* reverseBetween(ListNode* head, int left, int right) {
-    if (1 == left) {
-        return reverseN(head, right);
+    ListNode dummyNode(-1);
+    ListNode* dummy = &dummyNode;
+    dummy->next = head;
+    ListNode* pre = dummy;
+    for (int i = 0; i < left - 1; ++i) {
+        pre = pre->next;
     }
-
-    head->next = reverseBetween(head->next, left-1, right-1);
-    return head;
+    ListNode* cur = pre->next;
+    ListNode* next;
+    for (int i = 0; i < right - left; ++i) {
+        next = cur->next;
+        cur->next = next->next;
+        next->next = pre->next;
+        pre->next = next;
+    }
+    return dummy->next;
 }
 
 }
@@ -150,8 +145,8 @@ ListNode* reverseLinkedList(ListNode* head, int n) {
 }
 }
 
-// 烧饼排序
-namespace _968pancakeSort
+//! 烧饼排序==========================================================================
+namespace _969pancakeSort
 {
 vector<int> res;
 void sort(vector<int>& arr, int n) 
@@ -373,4 +368,34 @@ namespace _1 {
         return dummy.next;
     }
 }
+}
+
+
+//! K个一组翻转链表
+namespace _25reverseKGroup  {
+    ListNode* reverseK(ListNode* pre, int k) {
+        if (pre == nullptr || pre->next == nullptr) return nullptr; 
+        ListNode* cur = pre;
+        for (int i = 0; i < k; ++i) {
+            cur = cur->next;
+            if (cur == nullptr) return nullptr;
+        }
+        cur = pre->next; 
+        for (int i = 0; i < k-1; ++i) {
+            auto tmp = cur->next;
+            cur->next = tmp->next;
+            tmp->next = pre->next;
+            pre->next = tmp;
+        }
+        return cur;
+    }
+
+    ListNode* reverseKGroup(ListNode* head, int k) {
+        ListNode d; d.next = head;
+        ListNode* pre =  &d;
+        while (pre) {
+            pre = reverseK(pre, k);
+        }
+        return d.next;
+    }
 }
