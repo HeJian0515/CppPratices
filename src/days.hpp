@@ -617,3 +617,42 @@ int main() {
 }
 
 } 
+
+namespace _temp {
+
+void solve() {
+    int t, e, s;
+    int N; cin >> N;
+    stack<pair<int, int>> id_st;
+    int child_time;
+    int max_time_id = INT_MAX;
+    int max_time = -1;
+    while (N--) {
+        child_time = 0;
+        cin >> t >> e >> s;
+        if (s == 0) {
+            id_st.push({t, e});
+        } else if (s == 1) {
+            while (id_st.top().second == -1) {
+                child_time += id_st.top().first;
+                id_st.pop();
+            }
+            int temp_time = t - id_st.top().first - child_time;
+            if (max_time < temp_time || (max_time == temp_time && max_time_id > e)) {
+                max_time = temp_time;
+                max_time_id = e;
+            }
+            id_st.pop();
+            id_st.push({temp_time + child_time, -1});
+        }
+    }
+    cout << max_time_id << endl;
+}
+
+int main() {
+    int T; cin >> T;
+    while (T--) {
+        solve();
+    }
+}
+}
