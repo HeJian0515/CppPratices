@@ -30,6 +30,7 @@ namespace _887egg { //! 887. 鸡蛋掉落
 
         // 穷举所有的可能的选择
         for (int i = 1; i < N + 1; ++i) {
+            // 在第i层扔，碎与不碎
             res = min(res, max(dp(K, N - i), dp(K-1, i-1))+1);
         }
         // 记录备忘录
@@ -40,4 +41,40 @@ namespace _887egg { //! 887. 鸡蛋掉落
      int superEggDrop(int K, int N) {
          return dp(K, N);
     }
+namespace _1 {
+    unordered_map<int, int> memo;
+    int dp(int k, int n) {
+        if (memo.find(n*100+k) == memo.end()) {
+            int ans;
+            if (n == 0) {
+                ans = 0;
+            } else if (k == 1) {
+                ans = n;
+            } else {
+                int lo = 1, hi = n;
+                while (lo + 1 < hi) {
+                    int x = (lo + hi) / 2;
+                    int t1 = dp(k - 1, x - 1);
+                    int t2 = dp(k, n - x);
+
+                    if (t1 < t2) {
+                        lo = x;
+                    } else if (t1 > t2) {
+                        hi = x;
+                    } else {
+                        lo = hi = x;
+                    }
+                }
+                ans = 1 + min( max(dp(k-1, lo-1), dp(k, n - lo)), 
+                               max(dp(k-1, hi-1), dp(k, n - hi)) );
+            }
+            memo[n * 100+ k] = ans;
+        }
+        return memo[n* 100 + k];
+    }
+    
+    int superEggDrop(int k, int n) {
+        return dp(k, n);
+    }
+}
 }

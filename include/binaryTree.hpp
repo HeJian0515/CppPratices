@@ -276,6 +276,7 @@ TreeNode* convertBST(TreeNode* root) {
 }
 }
 
+//!! 判断是否是BST数
 namespace _98isValidBST {
 bool isValidBST(TreeNode* root, TreeNode* min, TreeNode* max) {
     if (nullptr == root) return true;
