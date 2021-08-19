@@ -713,7 +713,7 @@ bool isMatch(string s, string p)
     for (int i = 0; i <= m; ++i) {
         for (int j = 1; j <= n; ++j) {
             if (p[j-1] == '*') {
-                dp[i][j] |= dp[i][j-2]; // 忽略'*'
+                dp[i][j] |= dp[i][j-2]; // 忽略 x*
                 if (matches(i, j-1)) {
                     dp[i][j] |= dp[i-1][j]; // 继续使用'*'前面的那个字母
                 }
