@@ -75,34 +75,29 @@ ListNode* reverseList_it(ListNode* head) {
 
 namespace _92reverseBetween {
 
-ListNode* successor = nullptr;
-ListNode* reverseN(ListNode* head, int n) {
-    if (1 == n) {
-        // 记录第 n+1 个节点
-        successor = head->next;
-        return head;
-    }
-    // 以head->next为起点，需要反转前n-1个节点
-    ListNode* newHead = reverseN(head->next, n-1);
-
-    head->next->next = head;
-    // 让反转之后的 head 节点和后面的节点连起来
-    head->next = successor;
-    return newHead;
-}
-
+//! 反转链表中间一段
 ListNode* reverseBetween(ListNode* head, int left, int right) {
-    if (1 == left) {
-        return reverseN(head, right);
+    ListNode dummyNode(-1);
+    ListNode* dummy = &dummyNode;
+    dummy->next = head;
+    ListNode* pre = dummy;
+    for (int i = 0; i < left - 1; ++i) {
+        pre = pre->next;
     }
-
-    head->next = reverseBetween(head->next, left-1, right-1);
-    return head;
+    ListNode* cur = pre->next;
+    ListNode* next;
+    for (int i = 0; i < right - left; ++i) {
+        next = cur->next;
+        cur->next = next->next;
+        next->next = pre->next;
+        pre->next = next;
+    }
+    return dummy->next;
 }
 
 }
 
-// 求链表交点
+//! 求链表交点
 namespace _Offer52getIntersectionNode
 {
 ListNode* getIntersectionNode(ListNode *headA, ListNode *headB)
@@ -151,8 +146,8 @@ ListNode* reverseLinkedList(ListNode* head, int n) {
 }
 }
 
-// 烧饼排序
-namespace _968pancakeSort
+//! 烧饼排序==========================================================================
+namespace _969pancakeSort
 {
 vector<int> res;
 void sort(vector<int>& arr, int n) 
@@ -248,36 +243,38 @@ ListNode* mergeKLists(vector<ListNode*>& lists) {
 }
 }
 
-//*=====================优先队列==================================
+//!! *=====================优先队列==================================
 namespace _2 {
-struct Status {
-    int val;
-    ListNode* ptr;
-    bool operator < (const Status& rhs) const {
-        return val > rhs.val;
-    }
-};
 
-priority_queue<Status> q;
+    ListNode* mergeKLists(vector<ListNode*>& lists) {
+        if (lists.empty()) return nullptr;
+        int k = lists.size();
+        if (k == 1) return lists[0];
+        auto cmp = [] (const ListNode* l1, const ListNode* l2) {
+            return l1->val > l2->val;
+        };
+        priority_queue<ListNode*, vector<ListNode*>,decltype(cmp)> q(cmp);
+        for(auto head : lists) {
+            if (head) q.push(head);
+        }
 
-ListNode* mergeKLists(vector<ListNode*>& lists) {
-    for (auto node : lists) {
-        if (node) q.push({node->val, node});
-    }
+        ListNode d, *p = &d;
+        while (!q.empty()) {
+            auto t = q.top(); q.pop();
+            p->next = t;
+            p = p->next;
 
-    ListNode head, *tail = &head;
-    while (!q.empty()) {
-        auto f = q.top(); q.pop(); // 取出最小值
-        tail->next = f.ptr;
-        tail = tail->next;
-        if (f.ptr->next) q.push({f.ptr->next->val, f.ptr->next});
+            t = t->next;
+            if (t) q.push(t);
+        }
+
+        return d.next;
     }
-    return head.next;
-}
 }
 }
 
 //! =========================链表排序============================================
+//! 一般使用归并排序===============================================================
 namespace _148sortList {
 
     ListNode* merge(ListNode* a, ListNode* b) {
@@ -374,4 +371,96 @@ namespace _1 {
         return dummy.next;
     }
 }
+}
+
+
+//! K个一组翻转链表
+namespace _25reverseKGroup  {
+    ListNode* reverseK(ListNode* pre, int k) {
+        if (pre == nullptr || pre->next == nullptr) return nullptr; 
+        ListNode* cur = pre;
+        for (int i = 0; i < k; ++i) {
+            cur = cur->next;
+            if (cur == nullptr) return nullptr;
+        }
+        cur = pre->next; // cur始终指向第一个要反转的节点
+        for (int i = 0; i < k-1; ++i) {
+            auto next = cur->next;
+            cur->next = next->next;
+            next->next = pre->next; //! 插到第一个位置
+            pre->next = next;
+        }
+        return cur;
+    }
+
+    ListNode* reverseKGroup(ListNode* head, int k) {
+        ListNode d; d.next = head;
+        ListNode* pre =  &d;
+        while (pre) {
+            pre = reverseK(pre, k);
+        }
+        return d.next;
+    }
+}
+
+//! 判断环形链表
+namespace _141hasCycle {
+    bool hasCycle(ListNode* head) {
+        ListNode *fast = head, *slow = head;
+        while (fast != nullptr && fast->next != nullptr) {
+            slow = slow->next;
+            fast = fast->next->next;
+            if (slow == fast) return true;
+        }
+
+        return false;
+    }
+}
+
+//! 找到环形链表开始位置
+namespace _142detectCycle {
+    ListNode* detectCycle(ListNode* head) {
+        ListNode *fast = head, *slow = head;
+        while (fast && fast->next) {
+            fast = fast->next->next;
+            slow = slow->next;
+            if (slow == fast) break;
+        }
+        if (fast == nullptr || fast->next == nullptr) {
+            return nullptr;
+        }
+
+        slow = head;
+        while (slow != fast) {
+            fast = fast->next;
+            slow = slow->next;
+        }
+        return slow;
+    }
+}
+
+
+//! 删除链表的倒数第N个节点
+namespace _19removeNthFromEnd {
+    ListNode* findFromEnd(ListNode* head, int k) {
+        ListNode* p1 = head;
+        for (int i = 0; i < k; ++i) {
+            p1 = p1->next;
+        }
+        ListNode* p2 = head;
+        while (p1) {
+            p1 = p1->next;
+            p2 = p2->next;
+        }
+
+        return p2;
+    }
+
+    ListNode* removeNthFormEnd(ListNode* head, int n) {
+        ListNode d; d.next = head;
+        // 要先找到倒数第n+1个节点
+        ListNode* x = findFromEnd(&d, n+1);
+        x->next = x->next->next;
+        return d.next;
+    }
 }

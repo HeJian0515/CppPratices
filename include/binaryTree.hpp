@@ -442,6 +442,7 @@ bool isCompleteTree(TreeNode* root) {
 }
 
 namespace _1 {
+// 对节点编号
 bool isCompleteTree(TreeNode* root) {
     vector<pair<TreeNode*, int>> nodes;
     nodes.push_back({root, 1});

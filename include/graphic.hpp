@@ -2,7 +2,7 @@
 #include <queue>
 #include <string>
 #include <regex>
-
+#include <iostream>
 using namespace std;
 
 //! 并查集
@@ -119,7 +119,6 @@ bool isBipartite(vector<vector<int>>& graph)
 }
 
 //! 拓扑排序 -- 遍历有顺序
-
 namespace _207canFinish
 {
 vector<vector<int>> edges;
@@ -258,4 +257,72 @@ string compileSeq(string input) {
     return res;
 }
 
+}
+
+//! 图的强连通分量
+namespace __tarjan{
+// 在一次聚会中，教授们被要求写下自己认可哪位教授的学术成果（也可以写自己，且可能出现重复）。
+//已知，如果教授 A 认可教授 B ，且教授 B 认可教授 C，那么即可视为教授 A 也认可教授 C。
+// 现在我们想知道有多少对教授是两两互相认可的？
+void Tarjan(vector<vector<int>>& G, vector<int>& low, vector<int>& dfn,
+            vector<char>& visited, vector<int>& st,
+            int& time, int& res, int index) {
+    st.push_back(index);
+    // 标记入栈的节点
+    visited[index] = true;
+    dfn[index] = low[index] = time++;
+    // 若index所联通的v点尚未被访问，则对其进行访问,
+    // 访问后可能得到更低的low值，则可以更新index的low值
+    for (int v : G[index]){
+        // 若index所联通的v点尚未被访问，则对其进行访问,访问后可能得到更低的low值，则可以更新index的low值
+        if (!dfn[v]) {
+            Tarjan(G, low, dfn, visited, st, time, res, v);
+            low[index] = min(low[index], low[v]);
+        } else if (visited[v]) { // 若此节点被访问过，且在栈中，则有可能可以更新index的low值
+            low[index] = min(low[index], low[v]);
+        }
+        // 若此节点被访问过但不在栈中，则无需操作，为单独的一个强连通分量，不可能与index形成强连通分量
+    }
+
+    if (dfn[index] == low[index]) {
+        int cnt = 0;
+        int tmp = 0;
+        do {
+            tmp = st.back();
+            st.pop_back();
+            visited[tmp] = false;
+            ++cnt;
+        } while (tmp != index);
+        res += cnt * (cnt - 1) / 2;
+    }
+}
+
+int main() {
+    int n, m;
+    cin >> n >> m;
+    vector<vector<int>> G(n+1);
+    for (int i = 0; i < m; ++i) {
+        int src, dst;
+        cin >> src >> dst;
+        G[src].push_back(dst);
+    }
+
+    int time = 0;
+    // low[i]存放i节点由有向图可回溯到的最早时间戳
+    vector<int> low(n+1);
+    // dfn[i]表示i点被访问到的真实时间戳
+    vector<int> dfn(n+1);
+    // 标记该节点是否在栈 
+    vector<char> visited(n+1, false);
+    // vector模拟栈
+    vector<int> st;
+    // 存储结果
+    int res = 0;
+    for (int i = 0; i < n; ++i) {
+        if (!dfn[i]) {
+            Tarjan(G, low, dfn, visited, st, time, res, i);
+        }
+    }
+    cout << res << '\n';
+}
 }

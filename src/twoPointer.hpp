@@ -327,7 +327,7 @@ string reverseVowels(string s)
 }
 }
 
-// 判断一个字符能不能通过删除得到
+//! 判断一个字符能不能通过删除得到
 namespace _524findLongestWord
 {
 bool isSubstring(const string& s, const string& sub)
@@ -428,78 +428,6 @@ bool containsNearbyAlmostDuplicate(vector<int>& nums, int k, int t)
 
 }
 
-//***************************接雨水************************
-namespace _42trap{
-int trap(vector<int>& height) {
-    int n = height.size();
-    if (n == 0) return 0;
-
-    vector<int> leftMax(n);
-    leftMax[0] = height[0];
-    for (int i = 1; i < n; ++i) {
-        leftMax[i] = max(leftMax[i-1], height[i]);
-    }
-
-    vector<int> rightMax(n);
-    rightMax[n-1] = height[n-1];
-    for (int i = n-2; i >= 0; --i) {
-        rightMax[i] = max(rightMax[i+1], height[i]);
-    }
-
-    int ans = 0;
-    for (int i = 0; i < n; ++i) {
-        ans += min(leftMax[i], rightMax[i]) - height[i];
-    }
-
-    return ans;
-}
-//****************************************************************************
-namespace __stack {
-int trap(vector<int>& height) {
-    int ans = 0;
-    stack<int> stk;
-    int n = height.size();
-    for (int i = 0; i < n; ++i) {
-        while (!stk.empty() && height[i] > height[stk.top()]) {
-            int top = stk.top(); stk.pop();
-            if (stk.empty()) break;
-
-            int left = stk.top();
-            int currWidth = i -left -1;
-            int currHeight = min(height[left], height[i]) - height[top];
-            ans += currWidth * currHeight;
-        }
-        stk.push(i);
-    }
-
-    return ans;
-}
-//*****************************************************************************
-namespace _twoPointer {
-int trap(vector<int>& height) {
-    int left = 0, right = height.size()-1;
-    int ans = 0;
-    int left_max = 0, right_max = 0;
-    while (left < right) {
-        left_max = max(left_max, height[left]);
-        right_max = max(right_max, height[right]);
-
-        // left和right中的一个必然指向遍历过元素的最大值
-        // 若h[left] < h[right] 则++left直到h[left]>h[right]此时h[left]为遍历元素的最大值
-        // 若h[left] > h[right] 则--right直到h[left]<h[right]此时h[right]为遍历元素的最大值
-        if (height[left] < height[right]) { //? 必有left_max < right_max
-            ans += left_max - height[left];
-            ++left;
-        } else {
-            ans += right_max - height[right];
-            --right;
-        }
-    }
-    return ans;
-}
-}
-}
-}
 
 //! 三数之和=====================================================
 namespace _15threeSum {
@@ -538,5 +466,28 @@ namespace _15threeSum {
             }
         }
         return ans;
+    }
+}
+
+//! 下一个排列==================================================
+namespace _31nextPermutation {
+    //1. 从后向前查找第一个顺序对(i, i+1)，满足a[i] < a[i+1]; [i+1， n)必为降序序列
+    //2. 如果找到了顺序对，那么在区间[i+1, n)中从后向前查找第一个元素j,满足a[i]<a[j].
+    //3. 交换a[i]与a[j],此时可以证明该区间[j+1, n)必为降序
+    void nextPermutation(vector<int>& nums) {
+        int i = nums.size()-2;
+        while (i >= 0 && nums[i] >= nums[i+1]) {
+            --i;
+        }
+
+        if (i >= 0) {
+            int j = nums.size()-1;
+            while (j >= 0 && nums[i] >= nums[j]) {
+                --j;
+            }
+            swap(nums[i], nums[j]);
+        }
+        reverse(nums.begin()+i+1, nums.end());
+        
     }
 }

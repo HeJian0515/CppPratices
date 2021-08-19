@@ -1,212 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-// 原地旋转图像(nxn矩阵) 顺时针90°
-namespace _48rotate
-{
-//! 对于矩阵中第i行和第j个元素，在旋转后，他出现在倒数第i列的第j个位置
-// matrix_new[col][n-row-1] = matrix[row][col]
-void rotate(vector<vector<int>>& matrix)
-{
-    int n = matrix.size();
-    for (int i = 0; i < n / 2; ++i) {
-        for (int j = 0; j < (n+1)/2; ++j) {
-            int temp = matrix[i][j];
-            matrix[i][j] = matrix[n-j-1][i];
-            matrix[n-j-1][i] = matrix[n-i-1][n-j-1];
-            matrix[n-i-1][n-j-1] = matrix[j][n-i-1];
-            matrix[j][n-i-1] = temp;
-        }
-    }
-}
-}
-
-// 按上述方法轮转4次
-namespace _5776findRotation
-{
-bool findRotation(vector<vector<int>>& mat, vector<vector<int>>& target)
-{   
-    int n = mat.size();
-    // 最多旋转4次
-    int temp;
-    for (int k = 0; k < 4; ++k) {
-        // 旋转
-        for (int i = 0; i < n / 2; ++i) {
-            for (int j = 0; j < (n+1)/2; ++j) {
-                temp = mat[i][j];
-                mat[i][j] = mat[n-j-1][i];
-                mat[n-j-1][i] = mat[n-i-1][n-j-1];
-                mat[n-i-1][n-j-1] = mat[j][n-i-1];
-                mat[j][n-i-1] = temp;
-            }
-        }
-        if (mat == target) return true;
-    }
-    return false;
-}
-}
-
-namespace _5777reductionOperations
-{
-int reductionOperations(vector<int>& nums)
-{
-    map<int, int> mp;
-    for (int num : nums) {
-        ++mp[num];
-    }
-
-    int ans = 0, acc = 0;
-    for (auto it = mp.crbegin(); it != mp.crend(); ++it)
-    {
-        int f = it->second;
-        ans += acc; // 最大的值变为次大的值 完成一次操作
-        acc += f; // 记录现在最大的值有
-    }
-    return ans;
-}
-}
-
-namespace _5578minFlips
-{
-int minFlips(string s)
-{
-    auto I = [](char ch, int x) -> int {
-        return ch - '0' == x;
-    };
-
-    int n  = s.size();
-    vector<vector<int>> pre(n, vector<int>(2));
-
-    // pre[i][j] 变成以j结尾的交替字符串需要的1类型操作
-    for (int i = 0; i < n; ++i) {
-        pre[i][0] = (i == 0 ? 0 : pre[i-1][1]) + I(s[i], 1);
-        pre[i][1] = (i == 0 ? 0 : pre[i-1][0]) + I(s[i], 0);
-    } 
-
-    int ans = min(pre[n-1][0], pre[n-1][1]);   
-
-    if (n % 2 == 1)
-    {
-        // 如果n是奇数，还需要求出suf
-        vector<vector<int>> suf(n, vector<int>(2));
-
-        // 如果n是奇数，还需要求出suf; suf[i][j]     
-        for (int i = n - 1; i >= 0; --i) {
-            suf[i][0] = (i == n-1 ? 0 : suf[i+1][1]) + I(s[i], 1);
-            suf[i][1] = (i == n-1 ? 0 : suf[i+1][0]) + I(s[i], 0);
-        }
-
-        for (int i = 0; i+1 < n; ++i) {
-            ans = min(ans, pre[i][0] + suf[i+1][0]);
-            ans = min(ans, pre[i][1] + suf[i+1][1]);
-        }
-    }
-    return ans;
-}
-}
-
-namespace _128longestConsecutive
-{
-int longestConsecutive(vector<int>& nums)
-{
-    unordered_set<int> numSet(nums.cbegin(), nums.cend());
-    int ans = 0;
-
-    for (const int& num : numSet) {
-        if (!numSet.count(num-1)) {
-            int curNum = num;
-            int curLen = 1;
-
-            while (numSet.count(curNum + 1)) {
-                ++curNum;
-                ++curLen;
-            }
-            ans = max(ans, curLen);
-        }
-    }
-    return ans;
-}
-}
-
-
-namespace _645findErrorNums
-{
-vector<int> findErrorNums(vector<int>& nums)
-{
-    vector<int> ans; ans.reserve(2);
-    int n = nums.size();
-    for (int i = 0; i < n; ++i) {
-        // 如果i+1位置 不等于nums[i]
-        while (i+1 != nums[i]) { 
-            // 如果nums[i]-1位置的元素等于nums[i] 则nums[i]重复
-            if (ans.empty() && nums[i] == nums[nums[i] - 1]) {
-                ans.push_back(nums[i]); 
-                break;
-            }
-
-            // 如果又访问到重复的元素 跳过
-            if (!ans.empty() && nums[i]==ans[0]) break;
-            swap(nums[i], nums[nums[i]-1]);
-        }
-    }
-
-    for (int i = 0; i < n; ++i) {
-        if (nums[i] != i+1) {
-            ans.push_back(i+1);
-            break;
-        }
-    }
-    return ans;
-}
-
-vector<int> findErrorNums_1(vector<int>& nums)
-{
-    int n = nums.size();
-    int dup = -1;
-
-    for (int i = 0; i < n; ++i) {
-        int index = abs(nums[i]) - 1;
-        // nums[index] 小于0 则说明重复访问
-        if (nums[index] < 0) {
-            dup = abs(nums[i]);
-        } else {
-            nums[index] = -nums[index];
-        }
-    }
-
-    int missing = -1;
-    for (int i = 0; i < n; ++i) {
-        if (nums[i] > 0) {
-            missing = i + 1;
-        }
-    }
-    
-    return {dup, missing};
-}
-}
-
-
-// 二分查找山峰
-namespace _852peakIndexInMountainArray
-{
-int peakIndexMountainArray(vector<int>& arr)
-{   
-    int n = arr.size();
-    int l = 1, r = n - 2, ans = 0;
-
-    while (l <= r) {
-        int mid = l + (r - l)/2;
-        if (arr[mid] > arr[mid+1]) {
-            ans = mid;
-            r = mid -1;
-        } else {
-            l = mid + 1;
-        }
-    }
-    return ans;
-}
-}
-
 namespace _Alibaba_1 {
 
 namespace _1 {
@@ -618,41 +412,237 @@ int main() {
 
 } 
 
-namespace _temp {
 
-void solve() {
-    int t, e, s;
-    int N; cin >> N;
-    stack<pair<int, int>> id_st;
-    int child_time;
-    int max_time_id = INT_MAX;
-    int max_time = -1;
-    while (N--) {
-        child_time = 0;
-        cin >> t >> e >> s;
-        if (s == 0) {
-            id_st.push({t, e});
-        } else if (s == 1) {
-            while (id_st.top().second == -1) {
-                child_time += id_st.top().first;
-                id_st.pop();
-            }
-            int temp_time = t - id_st.top().first - child_time;
-            if (max_time < temp_time || (max_time == temp_time && max_time_id > e)) {
-                max_time = temp_time;
-                max_time_id = e;
-            }
-            id_st.pop();
-            id_st.push({temp_time + child_time, -1});
+namespace _Alibaba_2 {
+//*************************************************************************
+namespace _1 {
+
+
+int main() {
+    ios::sync_with_stdio(0); cin.tie(0);
+    int n, k;
+    cin >> n >> k;
+    map<vector<int>, int> pool;
+    
+    int ans = 0;
+    for (int i = 0; i < n; ++i) {
+        vector<int> cur;
+        vector<int> rev;
+        int prev;
+        cin >> prev;
+        for (int j = 1; j < k; ++j) {
+            int curr; cin >> curr;
+            cur.push_back(curr - prev);
+            rev.push_back(prev -curr);
         }
+        if (pool.find(rev) != pool.end()) {
+            ans += pool[rev];
+        }
+        pool[cur] += 1;
     }
-    cout << max_time_id << endl;
+    cout << ans << endl;
+}
+
+}
+
+//**************************************************************************
+namespace _2 {
+
+vector<vector<int>> ans;
+int n, m;
+void backtrack(vector<int>& path) {
+    if (path.size() == m) {
+        ans.push_back(path);
+    }
+
+    int start = path.empty() ? 1 : path.back() + 1;
+    for (int i = start; i <= n; ++i) {
+        path.push_back(i);
+        backtrack(path);
+        path.pop_back();
+    }
 }
 
 int main() {
-    int T; cin >> T;
-    while (T--) {
-        solve();
+    cin >> n >> m;
+    vector<int> path;
+    backtrack(path);
+    for (const vector<int>& v : ans) {
+        for (int i : v) cout << i << " ";
+        cout << '\n';
     }
 }
+
 }
+
+//**************************************************************************
+namespace _3 {
+
+int crossRiver(vector<int>& p) {
+    sort(p.begin(), p.end());
+    int n = p.size();
+    int time = 0;
+    while ( n >= 4) {
+        // 1. 最轻的每次都过去将船开回来， 每次载一个
+        // 2. 最轻的俩先过去， 最轻的那个开船回来让最重的两个过去， 次轻的开回来
+        time += min(p[0]*2 + p[n-2] + p[n-1], p[0] + p[1]*2 + p[n-1]);
+       n -= 2;
+    }
+    if (n == 3) time += p[0] + p[1] + p[2]; // 最轻的依次把其他人运过去
+    else if (n == 2) time += p[1];
+    else if (n == 1) time += p[0];
+
+    return time;
+}
+
+int main() {
+    int t;
+    cin >> t;
+    while (t--) {
+        int n; cin >> n;
+        vector<int> p(n);
+        for (int i = 0; i < n; ++i) cin >> p[i];
+        cout << crossRiver(p) << '\n';
+    }
+}
+
+}
+
+//***************************************************************************
+namespace _4 {
+
+int gcd(int a, int b) {
+    if (a < b) swap(a, b);
+    while (b != 0) {
+        int temp = a % b;
+        a = b;
+        b =temp;
+    }
+    return a;
+}
+
+int main() {
+    int A, B, a, b;
+    cin >> A >> B >> a >> b;
+    
+    int d = gcd(a, b);
+    a /= d; b /= d;
+    int u = min(A / a, B / b);
+    cout << u * a << " " << u * b;
+}
+
+}
+
+//***************************************************************************
+namespace _5 {
+
+int main() {
+    int n; cin >> n;
+    vector<int> xs(n);
+    for (int i = 0, tmp; i < n; ++i) {
+        cin >> xs[i] >> tmp;
+    }
+
+    nth_element(xs.begin(), next(xs.begin(), n/2), xs.end());
+    int mid = xs[n/2];
+    long long res = 0;
+    for (int x : xs) res += abs(x - mid);
+    cout << res;
+}
+
+}
+
+// 为保证绝对值差之和最大，就要保证所有数对的绝对值尽可能均匀
+namespace _6 {
+
+int main() {
+    int n; cin >> n;
+    vector<int> a(n);
+    for (int i = 0; i < n; ++i) cin >> a[i];
+    sort(a.begin(), a.end());
+
+    vector<int> ans; ans.reserve(n);
+    int mid = n % 2 == 0 ? n/2 : n/2+1;
+    int p1 = 0, p2 = mid;
+    while (p1 < mid && p2 < n) {
+        ans.push_back(a[p1++]);
+        ans.push_back(a[p2++]);
+    }
+    if (p1 < mid) ans.push_back(a[p1]);
+    if (p2 < n) ans.push_back(a[p2]);
+    long long sum = 0;
+
+    for (int i = 0; i < n-1; ++i) sum += abs(ans[i] - ans[i+1]);
+    cout << sum + abs(ans[0] - ans.back()) << '\n';
+    for (int val : ans) cout << val << " ";
+}
+
+
+}
+
+//***************************************************************************
+//动态规划 绝对值
+namespace _7 {
+
+int main() {
+    int n; cin >> n;
+    vector<vector<int>> a(3, vector<int>(n));
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < n; ++j) {
+            cin >> a[i][j];
+        }
+    }
+
+    vector<vector<long long>> dp(3, vector<long long>(n));
+    for (int j = 1; j < n; ++j) {
+        for (int i = 0; i < 3; ++i) {
+            dp[i][j] = min({
+                abs(a[i][j] - a[0][j-1]) + dp[0][j-1],
+                abs(a[i][j] - a[1][j-1]) + dp[1][j-1],
+                abs(a[i][j] - a[2][j-1]) + dp[2][j-1]
+            });
+        }
+    }
+    cout << min({dp[0][n-1], dp[1][n-1], dp[2][n-1]});
+}
+
+}
+
+namespace _8 {
+
+int main() {
+    int n; cin >> n;
+    vector<int> a(n+1);
+    for (int i = 1; i <= n; ++i) cin >> a[i];
+    vector<int>b(n+1, 1);
+    for (int i = n; i >= 1; --i) b[a[i]] += b[i];
+    for (int i = 1; i <= n; ++i) cout << b[i] << '\n';
+}
+
+}
+
+namespace _9 {
+
+int main() {
+    int t; cin >> t;
+    while (t--) {
+        int n, m; cin >> n >> m;
+        vector<char> str(n);
+        for (int i = 0; i < n; ++i) cin >> str[i];
+
+        vector<char> res;
+        m = n - m;
+        for (int i = 0; i < n; ++i) {
+            while (!res.empty() && str[i] < res.back() && res.size()+n-i >m) {
+                res.pop_back();
+            }
+            if(res.size() < m) res.push_back(str[i]);
+        }
+        for (int i = 0; i < m; ++i) cout << res[i];
+        cout << '\n';
+    }
+}
+
+}
+
+} // namespace
