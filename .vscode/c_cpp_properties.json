@@ -1,8 +1,7 @@
 {
     "configurations": [
         {
-            "name": "MinGW64",
-            "compilerPath": "D:/mingw64/bin/g++.exe",
+            "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**"
             ],
@@ -11,8 +10,10 @@
                 "UNICODE",
                 "_UNICODE"
             ],
-            "cStandard": "c17",
-            "cppStandard": "c++17",
+            "windowsSdkVersion": "10.0.19041.0",
+            "compilerPath": "D:/mingw64/bin/g++.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++11",
             "intelliSenseMode": "gcc-x64",
             "configurationProvider": "ms-vscode.cmake-tools"
         }

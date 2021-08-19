@@ -4,6 +4,7 @@
 #include <cmath>
 #include <climits>
 #include <random>
+#include <ctime>
 using namespace std;
 
 struct ListNode {
@@ -241,7 +242,7 @@ int superPow(int a, vector<int>& b) {
 
 }
 
-//! 概率===================
+//! 概率=============================================================================
 namespace _probability
 {
     // 抽一个元素，保证抽取的概率是1/n, 只遍历一遍
@@ -266,5 +267,39 @@ public:
         return res;
     }
 };
+    
+    namespace _shuffle {
+        //! 洗牌算法==================================================================
+        // 从n个数中选出m个数
+        //! 核心思想，从[0:n-1]中选一个数放在最后；然后从[0:n-2]中选一个数放在倒数第二 ....
+        void selectMFromN(int a[], int n, int m) {
+            srand(time(nullptr));
+            for (int i = n-1; i >= n-m; ++i) {
+                swap(a[rand()%(i+1)], a[i]);
+            }
+        }
+
+        //! 蓄水池算法=================================================================
+        //! 如果要随机选择 k 个数，只要在第 i(i>k) 个元素处以 k/i 的概率选择该元素，以 1 - k/i 的概率保持原有选择即可。
+        vector<int> getRandom(vector<int>& arr, int k) {
+            srand(time(nullptr));
+            vector<int> ans(k);
+            
+            // 前k个元素先默认选上
+            for (int j = 0; j < k; ++j) {
+                ans[j] = arr[j];
+            }
+            
+            for (int i = k; i < arr.size(); ++i) {
+                // 生成一个[0, i)之间的整数
+                int j = rand() % i;
+                // 这个整数小于k的概率就是 k/i
+                if (j < k) ans[j] = arr[i];
+            }
+
+            return ans;
+        }
+    }
 }
+
 

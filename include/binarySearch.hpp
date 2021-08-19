@@ -5,6 +5,77 @@
 
 using namespace std;
 
+//! 二分及其变体问题
+namespace _bSearch_ {
+
+    //! 查找第一个值等于给定值的元素
+    int bsearch_1(int a[], int n, int value) {
+        int low = 0;
+        int high = n-1;
+        while (low <= high) {
+            int mid = low + (high - low)/2;
+            if (a[mid] > value) {
+                high = mid - 1;
+            } else if (a[mid] < value) {
+                low = mid + 1;
+            } else {
+                if (mid == 0 || a[mid-1] != value) return mid;
+                else high = mid - 1;
+            }
+        }
+        return -1;
+    }
+
+    //! 查找最后一个值等于给定值的元素
+    int bsearch_2(int a[], int n, int value) {
+        int low = 0;
+        int high = n - 1;
+        while (low <= high) {
+            int mid = low + (high - low)/2;
+            if (a[mid] > value) {
+                high = mid - 1;
+            } else if (a[mid] < value) {
+                low = mid + 1;
+            } else {
+                if (mid == n-1 || a[mid+1] != value) return mid;
+                else low = mid + 1;
+            }
+        }
+        return -1;
+    }
+
+    //! 查找第一个值大于或等于给定值的元素
+    int bsearch_3(int a[], int n, int value) {
+        int low = 0;
+        int high = n - 1;
+        while (low <= high) {
+            int mid = low + (high - low)/2;
+            if (a[mid] >= value) {
+                if (mid == 0 || a[mid-1] < value) return mid;
+                else high = mid - 1;
+            } else {
+                low = mid + 1;
+            }
+        }
+        return -1;
+    }
+
+    //! 查找最后一个值小于等于给定值的元素
+    int bsearch_4(int a[], int n, int value) {
+        int low = 0;
+        int high = n - 1;
+        while (low <= high) {
+            int mid = low + (high - low)/2;
+            if (a[mid] > value) {
+                high = mid - 1;
+            } else {
+                if (mid == n-1 || a[mid+1] > value) return mid;
+                else low = mid + 1;
+            }
+        }
+        return -1;
+    }
+}
 
 namespace _69MySqrt{
 int mySqrt(int x) {
@@ -89,7 +160,7 @@ int shipWithinDays(vector<int>& weights, int D) {
 }
 }
 
-// 搜索旋转排序数组 II
+//! 搜索旋转排序数组 II
 namespace _81search
 {
 bool search(vector<int> &nums, int target) {
@@ -117,27 +188,6 @@ bool search(vector<int> &nums, int target) {
         }
     }
     return false;
-}
-}
-
-namespace _540singleNonDuplicate
-{
-int singleNonDuplicate(vector<int>& nums)
-{
-    int l = 0, r = nums.size()-1;
-    
-    while (l < r)
-    {
-        int mid = l + (r-l)/2;
-        if (mid % 2 == 1) --mid; // 保证mid是偶数
-
-        if (nums[mid] != nums[mid+1]) {
-            r = mid;
-        } else {
-            l = mid+2;
-        }
-    }
-    return nums[l];
 }
 }
 
@@ -171,13 +221,14 @@ int getKthElement(const vector<int>& nums1, const vector<int>& nums2, int k)
 
         if (pivot1 <= pivot2) {
             k -= newIndex1 - index1 + 1;
-            index1 = newIndex1+1;
+            index1 = newIndex1 + 1;
         } else {
             k -= newIndex2 - index2 + 1;
             index2 = newIndex2 + 1;
         }
     }
 }
+
 double findMedianSortedArrays(vector<int>& nums1, vector<int>& nums2)
 {
     int totalLen = nums1.size() + nums2.size();

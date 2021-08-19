@@ -40,4 +40,43 @@ namespace _887egg { //! 887. 鸡蛋掉落
      int superEggDrop(int K, int N) {
          return dp(K, N);
     }
+
+    //! 动态规划+二分==============================================================================
+    namespace _1 {
+        unordered_map<int, int> memo;
+        int dp(int k, int n) {
+            if (memo.find(n*100 + k) == memo.end()) {
+                int ans;
+                if (n == 0) { // 0层楼
+                    ans = 0;
+                } else if (k == 1) { // 只有一个鸡蛋
+                    ans = n;
+                } else {
+                    int lo = 1, hi = n;
+                    while (lo + 1 < hi) {
+                        int x = (lo + hi)/2;
+                        int t1 = dp(k-1, x-1); // 在第x层扔鸡蛋，鸡蛋碎了
+                        int t2 = dp(k, n-x); // 在第x层扔鸡蛋，鸡蛋没碎 
+
+                        if (t1 < t2) {
+                            lo = x;
+                        } else if (t1 > t2) {
+                            hi = x;
+                        } else {
+                            lo = hi = x;
+                        }
+                    }
+                    ans = 1 + min(max(dp(k-1, lo-1), dp(k, n-lo)),
+                                  max(dp(k-1, hi-1), dp(k, n-hi)));
+                }
+                memo[n*100 + k] = ans;
+            }
+
+            return memo[n*100 + k];
+        }
+
+        int superEggDrop(int k, int n) {
+            return dp(k, n);
+        }
+    }
 }
