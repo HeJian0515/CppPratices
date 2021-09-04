@@ -110,3 +110,104 @@ int splitArray(vector<int>& nums, int m) {
 
 }
 
+//! 数组去重================================================================
+
+//! 删除有序数组中的重复项
+namespace _26removeDuplicates {
+    int removeDuplicates(vector<int>& nums) {
+        int n = nums.size();
+        if (n == 0) return 0;
+
+        int slow = 0, fast = 0;
+        while (fast < n) {
+            if (nums[slow] != nums[fast]) {
+                ++slow;
+                nums[slow] = nums[fast];
+            }
+            ++fast;
+        }
+        
+        return slow + 1;
+    }
+}
+
+//! 数组移除元素=======================
+namespace _27removeElement {
+    int removeElement(vector<int>& nums, int val) {
+        int n = nums.size();
+        if (n == 0) return 0;
+
+        int slow = 0, fast = 0;
+        while (fast < n) {
+            if (nums[fast] != val) {
+                nums[slow] = nums[fast];
+                ++slow;
+            }
+            ++fast;
+        }
+        return slow;
+    }
+}
+
+//! 移动零================================
+//! 相当于移除数组中的0,再将后面的数都置零
+namespace _283moveZeroes {
+    void moveZeroes(vector<int>& nums) {
+        int n = nums.size();
+        int p0 = -1, p = 0;
+        while (p < n) {
+            if (nums[p] == 0) {
+                if (p0 == -1) p0 = p; // 首先将p0指向0
+            } else {
+                if (p0 != -1) {
+                    swap(nums[p0], nums[p]); 
+                    ++p0;
+                }
+            }
+            ++p;
+        }
+    }
+}
+
+
+//! Offer51 数组中的逆序对===========================
+namespace __51reversePair {
+
+    int mergeSort(vector<int>& nums, vector<int>& tmp, int l, int r) {
+        if (l >= r) {
+            return 0;
+        }
+        int mid = (l + r) / 2;
+        int inv_count = mergeSort(nums, tmp, l, mid) + mergeSort(nums, tmp, mid+1, r);
+        int i = l, j = mid + 1, pos = l;
+        while (i <= mid && j <= r) {
+            if (nums[i] <= nums[j]) {
+                tmp[pos] = nums[i];
+                ++i;
+                //! nums[i] 比 nums[mid+1, j-1]大
+                inv_count += (j - (mid+1));
+            } else {
+                tmp[pos] = nums[j];
+                ++j;
+            }
+            ++pos;
+        }
+
+        for (int k = i; k <= mid; ++k) {
+            tmp[pos++] = nums[k];
+            inv_count += (j - (mid+1));
+        }
+        for (int k = j; k <= r; ++k) {
+            tmp[pos++] = nums[k];
+        }
+        copy(tmp.begin()+l, tmp.begin()+r+1, nums.begin()+l);
+        return inv_count;
+
+    }
+
+    int reversePairs(vector<int>& nums) {
+        int n = nums.size(); vector<int> tmp(n);
+        vector<int> copy(nums);
+        return mergeSort(copy, tmp, 0, n-1);
+    }
+}

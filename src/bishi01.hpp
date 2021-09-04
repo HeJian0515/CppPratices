@@ -263,3 +263,91 @@ int main() {
 }
 
 }
+
+//! 网易互联网 
+namespace _netease_HuLianWang {
+
+// 环 发纸(发糖)  
+namespace _1 {
+    vector<int> mySplit(string& s) {
+        regex re(" "s);
+        vector<string> ss(sregex_token_iterator(s.begin(), s.end(), re, -1),
+                          sregex_token_iterator());
+        vector<int> ret; ret.reserve(ss.size());
+        for (auto& str : ss) ret.push_back(stoi(str));
+        return ret;
+    }
+
+    int main() {
+        string s;
+        getline(cin, s);
+        vector<int> nums = mySplit(s);
+        int n = nums.size();
+
+        vector<int> dp(n, 1);
+
+        while (true) {
+            bool flag = false;
+            for (int i = 0; i < n; ++i) {
+                if (nums[i] > nums[(i+n-1)%n]) {
+                    if (dp[i] <= dp[(i+n-1)%n]) {
+                        ++dp[i];
+                        flag = true;
+                    }
+                }
+
+                if (nums[i] > nums[(i+n+1)%n]) {
+                    if (dp[i] <= dp[(i+n+1)]%n) {
+                        ++dp[i];
+                        flag = true;
+                    }
+                }
+            }
+            if (!flag) break;
+        }
+        cout << accumulate(dp.cbegin(), dp.cend(), 0LL);
+    }
+}
+
+// 图 水路 陆路 障碍 
+namespace _2 {
+
+int min_cost = -1;
+const int dir[][2] = {{0, 1}, {1, 0}};
+
+void newdfs(vector<vector<int>>& grid, int x, int y, int cost, vector<vector<char>>& vis) {
+    int n = grid.size();
+    int m = grid[0].size();
+    if (x == n - 1 && y == m - 1) {
+        if (min_cost == -1) {
+            min_cost = cost;
+        } else {
+            min_cost = min(min_cost, cost);
+        }
+    }
+
+    if (!vis[x][y]) {
+        vis[x][y] = true;
+        for (int i = 0; i < 2; ++i) {
+            int tx = x + dir[i][0];
+            int ty = y + dir[i][1];
+            if (tx >= 0 && tx < n && ty >=0 && ty < m && grid[tx][ty] != 2) {
+                if (grid[tx][ty] == 0) {
+                    newdfs(grid, tx, ty, cost+2, vis);
+                } else {
+                    newdfs(grid, tx, ty, cost+1, vis);
+                }
+            }
+        }
+        vis[x][y] = false;
+    }
+}
+
+int minSailCost(vector<vector<int>>& input) {
+    vector<vector<char>> vis(input.size(), vector<char>(input[0].size()));
+
+    return min_cost;
+}
+
+}
+}

@@ -464,3 +464,22 @@ namespace _19removeNthFromEnd {
         return d.next;
     }
 }
+
+//! 删除排序链表中的重复元素==========================================
+namespace _83deleteDuplicates {
+    ListNode* deleteDulicates(ListNode* head) {
+        if (head == nullptr) return nullptr;
+        ListNode *slow = head, *fast = head;
+        while (fast) {
+            if (fast->val != slow->val) {
+                slow->next = fast;
+                slow = slow->next;
+            }
+            fast = fast->next;
+        }
+
+        // 断开与后面重复元素的连接
+        slow->next = nullptr;
+        return head;
+    }  
+}

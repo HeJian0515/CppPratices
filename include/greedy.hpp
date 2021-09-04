@@ -196,7 +196,7 @@ int findContentChildren(vector<int>& g, vector<int>& s)
 }
 }
 
-// 135 分发糖果
+//!! 135 分发糖果===========================================================
 // 升序序列从1开始，降序序列也从1开始
 // 升序序列长度等于最后一个人分到的糖果数，降序序列长度等于第一个人分到的糖果数
 namespace _135candy {
@@ -227,18 +227,23 @@ int candy(vector<int>& ratings)
     return ret;
 }
 
+//! 分为左规则和右规则；左规则：a[i-1]<a[i]时i号学生得的糖果数量多，
+//! 右规则：a[i]>a[i+1]时 i号学生得的糖果数量多
+//! 遍历两遍，别使之满足左规则和右规则
 int candy_1(vector<int>& ratings) 
 {
     int n = ratings.size();
     if (n < 2) return n;
 
     vector<int> num(n, 1); // 先给每个人分配一个糖果
+    // 考虑左规则
     for (int i = 1; i < n; ++i) {
         if (ratings[i] > ratings[i-1]) {
             num[i] = num[i-1] + 1;
         }
     }
 
+    // 考虑右规则
     for (int i = n-1; i > 0; --i) {
         if (ratings[i] < ratings[i-1]) {
             num[i-1] = max(num[i-1], num[i]+1);
@@ -249,7 +254,7 @@ int candy_1(vector<int>& ratings)
 }
 
 
-// 统计[1, ...., 1]两个1之间的0的个数， 该段区间内种花的数量 = (count - 1) / 2;
+//! 统计[1, ...., 1]两个1之间的0的个数， 该段区间内种花的数量 = (count - 1) / 2;
 namespace _605canPlaceFlowers {
 bool canPlaceFlowers(vector<int>& flowerbed, int n)
 {   
@@ -330,4 +335,37 @@ vector<vector<int>> reconstructQueue_1(vector<vector<int>>& people) {
 
     return vector<vector<int>>(lst.cbegin(), lst.cend());
 }
+}
+
+//! 田忌赛马==================
+namespace __870advantageCount {
+    vector<int> advantageCount(vector<int>& nums1, vector<int>& nums2) {
+        int n = nums1.size();
+        sort(nums1.begin(), nums2.end(), greater<int>());
+        vector<pair<int, int>> sorted2(n);
+        for (int i = 0; i < n; ++i) {
+            sorted2[i] = {nums2[i], i};
+        }
+        sort(sorted2.begin(), sorted2.end(), [](const pair<int, int>& p1, const pair<int, int>& p2) {
+            return p1.first > p2.first;
+        });
+
+        vector<int> res(n);
+        // 双指针记录A中来对战的马匹
+        int l = 0, r = n -1;
+        // 遍历B中所有的马匹
+        for (int i = 0; i < n; ++i) {
+            auto p = sorted2[i];
+            //! A打不过B，找最弱的来
+            if (nums1[l] <= p.first) {
+                res[p.second] = nums1[r];
+                --r;
+            } else {
+                //! 打的过，就直接比
+                res[p.second] = nums1[l];
+                ++l;
+            }
+        }
+        return res;
+    }
 }

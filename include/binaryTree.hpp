@@ -353,7 +353,7 @@ TreeNode* deleteNode(TreeNode* root, int key) {
 }
 
 
-// 二叉树的最近公共祖先
+//!! 二叉树的最近公共祖先
 namespace _236lowestCommonAncestor
 {
 TreeNode* ans;
@@ -405,7 +405,7 @@ TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q)
 
     // q一路走向根节点，如果碰到已经标记过的结点，就返回
     while (q != nullptr) {
-        if (vis[q]) return q;
+        if (vis.count(q)) return q;
         q = fa[q];
     }
     return nullptr;

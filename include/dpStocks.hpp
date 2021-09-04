@@ -75,8 +75,8 @@ namespace _123dpStocks { //! 123. 买卖股票的最佳时机 III
                     dp[i][k][1] = -prices[0];
                     continue;
                 }
-                dp[i][k][0] = std::max(dp[i-1][k][0], dp[i-1][k][1] + prices[i]);
-                dp[i][k][1] = std::max(dp[i-1][k][1], dp[i-1][k-1][0] - prices[i]);
+                dp[i][k][0] = std::max(dp[i-1][k][0], dp[i-1][k][1] + prices[i]); // 卖出股票
+                dp[i][k][1] = std::max(dp[i-1][k][1], dp[i-1][k-1][0] - prices[i]); // 买入股票
             }
         }
         return dp[days-1][2][0];

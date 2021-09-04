@@ -112,7 +112,7 @@ string minWindow(string s, string t)
             }
         }
     }
-
+    
     return len == INT_MAX ? "" : s.substr(start, len); 
 }
 
@@ -471,6 +471,7 @@ namespace _15threeSum {
 
 //! 下一个排列==================================================
 namespace _31nextPermutation {
+    //! 找一个较小的和一个较大数，较小数尽量有
     //1. 从后向前查找第一个顺序对(i, i+1)，满足a[i] < a[i+1]; [i+1， n)必为降序序列
     //2. 如果找到了顺序对，那么在区间[i+1, n)中从后向前查找第一个元素j,满足a[i]<a[j].
     //3. 交换a[i]与a[j],此时可以证明该区间[j+1, n)必为降序

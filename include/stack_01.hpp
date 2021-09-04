@@ -1,10 +1,12 @@
 #pragma once
 #include <algorithm>
+#include <numeric>
 #include <stack>
 #include <unordered_map>
 #include <string>
 #include <vector>
 #include <climits>
+#include <deque>
 using namespace std;
 
 // 栈实现队列
@@ -432,6 +434,7 @@ int largestRectangleArea(vector<int>& heights) {
 
 //* 矩阵里的最大矩形***********************************************
 namespace _85maximalRectangle {
+    
 int maximalRectangle(vector<vector<char>>& matrix) {
     int m = matrix.size();
     if (m == 0) return 0;
@@ -465,4 +468,125 @@ int maximalRectangle(vector<vector<char>>& matrix) {
 
     return ret;
 }
+}
+
+
+//! 计算器================================
+
+//! 基本计算器 + - ()
+namespace _224calculate {
+    int calculate(string s) {
+        stack<int> ops; // 记录括号之前的符号
+        ops.push(1);
+        int sign = 1;
+
+        int ret = 0;
+        int n = s.size();
+        int i = 0;
+        while (i < n) {
+            if (s[i] == ' ') {
+                ++i;
+            } else if (s[i] == '+') {
+                sign = ops.top();
+                ++i;
+            } else if (s[i] == '-') {
+                sign = -ops.top();
+                ++i;
+            } else if (s[i] == '(') {
+                ops.push(sign);
+                ++i;
+            } else if (s[i] == ')') {
+                ops.pop();
+                ++i;
+            } else {
+                int num = 0;
+                while (i < n && isdigit(s[i])) {
+                    num = num * 10 + (s[i] - '0');
+                    ++i;
+                }
+                ret += sign * num;
+            }
+        }
+        return ret;
+    }
+}
+
+//! 227基本计算器2 只有 + - * / 和括号
+namespace _227calculate {
+    int calculate(string s) {
+        vector<int> stk;
+        char preSign = '+';
+        int num = 0;
+        int n = s.size();
+        for (int i = 0; i < n; ++i) {
+            if (isdigit(s[i])) {
+                num = num * 10 + (s[i] - '0');
+            }
+            if ((!isdigit(s[i]) && s[i] != ' ') || i == n-1) {
+                switch (preSign) {
+                    case '+':
+                        stk.push_back(num); break;
+                    case '-':
+                        stk.push_back(-num); break;
+                    case '*':
+                        stk.back() *= num; break;
+                    case '/':
+                        stk.back() /= num; break;
+                }
+                preSign = s[i];
+                num = 0;
+            }
+        }
+        return accumulate(stk.cbegin(), stk.cend(), 0);
+    }
+}
+
+
+namespace _772calculate {
+    // 递归调用的关键在于，需要计算成对括号的位置，使用全局变量index来实现
+    int index = 0;
+
+    int cal(string& s) {
+        vector<int> stk;
+        int num = 0;
+        char sign = '+';
+        for (; index < s.size(); ++index) {
+            char c = s[index];
+            if (isdigit(c)) {
+                num = num * 10 + (c - '0');
+            }
+
+            if (c == '(') {
+                ++index; // index指针指到下一个字符
+                num = cal(s);
+            }
+
+            //! 当遇到了新的运算符，就要对上一个运算法sign和累计的数字num作运算
+            // 空格直接无视，i继续前进
+            if ((!isdigit(c) && c != ' ') || index == s.size()-1) {
+                int pre = 0;
+                switch (sign) {
+                    case '+':
+                        stk.push_back(num); break;
+                    case '-':
+                        stk.push_back(-num); break;
+                    case '*':
+                        pre = stk.back(); stk.pop_back();
+                        stk.push_back(pre * num); break;
+                    case '/':
+                        pre = stk.back(); stk.pop_back();
+                        stk.push_back(pre / num); break;
+                }
+                sign = c;
+                num = 0; // 计数归位
+            }
+            if (c == ')') break;
+        }
+
+        return accumulate(stk.begin(), stk.end(), 0);
+    }
+
+    int calculate(string s) {
+        return cal(s);
+    }
 }
