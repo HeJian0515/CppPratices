@@ -3,6 +3,9 @@
 #include <vector>
 #include <utility>
 #include <algorithm>
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
 using namespace std;
 
 namespace _5longestPalinddrome
@@ -291,4 +294,90 @@ namespace _2 {
 
     }
 }
+}
+
+namespace _memcpy {
+    //! 内存逐个拷贝
+    void* my_memcpy_byte(void *dst, const void *src, int n) {
+        if (dst == NULL || src == NULL || n <= 0) {
+            return NULL;
+        }
+
+        char *pdst = (char*)dst;
+        char *psrc = (char*)src;
+
+        if (pdst > psrc && pdst < psrc+n) {
+            pdst = pdst + n - 1;
+            psrc = psrc + n - 1;
+            while (n--) {
+                *pdst-- = *psrc--;
+            }
+        } else {
+            while(n--) {
+                *pdst++ = *psrc++;
+            }
+        }
+
+        return dst;
+    }
+
+    //! 字符串拷贝
+    char* my_memcpy(char *dst, const char *src, int n) {
+        assert(dst != NULL && src != NULL && n > 0);
+        char *ret = dst;
+
+        // 内存重叠,从高地址开始复制
+        if (dst >= src && dst <= src+n-1) {
+            dst = dst + n - 1;
+            src = src + n - 1;
+            while (n--) {
+                *dst-- = *src--;
+            }
+        } else { // 正常情况，从低地址开始复制
+            while (n--) {
+                *dst++ = *src++;
+            }
+        }
+
+        return ret;
+    }
+
+    int my_strcmp(const char* s1, const char* s2) {
+        assert(s1 != NULL);
+        assert(s2 != NULL);
+        while (*s1 && *s2 && (*s1 == *s2)) {
+            ++s1; ++s2;
+        }
+        return *s1 - *s2;
+    }
+
+    int my_strcmp_ms(const char *s1, const char *s2) {
+        assert(s1 != NULL);
+        assert(s2 != NULL);
+        int ret = 0;
+        while (!(ret = *(unsigned char *)s1 - *(unsigned char *)s2) && *s2) {
+            ++s1;
+            ++s2;
+        }
+
+        if (ret < 0) ret = -1;
+        else if (ret > 0) ret = 1;
+        return ret;
+    }
+    // 在s1中找s2
+    const char* strStr(const char* haystack, const char *needle) {
+        int n = strlen(haystack), m = strlen(needle);
+        for (int i = 0; i + m <= n; ++i) {
+            bool flag = true;
+            for (int j = 0; j < m; ++j) {
+                if (haystack[i+j] != needle[j]) {
+                    flag = false;
+                    break;
+                }
+            }
+            if (flag) return haystack + i;
+        }
+        return NULL;
+    }
+
 }

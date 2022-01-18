@@ -644,55 +644,49 @@ vector<vector<int>> subsets(vector<int>& nums)
 //* n皇后问题
 namespace _51solveNQueens
 {
-vector<string> generateBoard(vector<int>& queens, int n)
-{
-    vector<string> board(n, string(n, '.'));
-    for (int i = 0;  i < n; ++i) {
-        board[i][queens[i]] = 'Q';
-    }
-    return board;
-}
-void backtrack(vector<vector<string>>& ans, vector<int>& queens, 
-                int n, int row, unordered_set<int>& col,
-                unordered_set<int>& ddiag, unordered_set<int>& udiag)
-{
-   if (row == n) {
-       ans.push_back(generateBoard(queens, n));
-       return;
-   } 
-
-    for (int i = 0; i < n; ++i) { 
-        if (col.count(i)) continue; // 同列已经有皇后
-
-        int d = row - i;            
-        if (ddiag.count(d)) continue; // 从左上角到右下角的对角线上有皇后
-
-        int u = row + i;
-        if (udiag.count(u)) continue; // 从左下角到右上角的对角线上有皇后
-
-        queens[row] = i;
-        col.insert(i);
-        ddiag.insert(d);
-        udiag.insert(u);
-
-        backtrack(ans, queens, n, row+1, col, ddiag, udiag);
-
-        queens[row] = -1;
-        col.erase(i);
-        ddiag.erase(d);
-        udiag.erase(u);
-    }
-}
-
-vector<vector<string>> solveNQueens(int n)
-{
     vector<vector<string>> ans;
-    vector<int> queens(n, -1);
-    unordered_set<int> col, ddiag, udiag;
-    backtrack(ans, queens, n, 0, col, ddiag, udiag);
-    
-    return ans;
-}
+
+    bool check(vector<string>& g, int n, int k, int m) {
+        for (int i = 0; i < k; ++i) {
+            if (g[i][m] == 'Q') return false;
+        }
+
+        int b1 = k - m;
+        for (int i = 0; i < k; ++i) {
+            int j = i - b1;
+            if (j >=0 && j < n && g[i][i-b1] == 'Q') return false;
+        }
+
+        int b2 = k + m;
+        for (int i = 0; i < k; ++i) {
+            int j = b2 - i;
+            if (j >= 0 && j < n && g[i][b2-i] == 'Q') return false;
+        }
+
+        return true;
+    }
+
+    void trackback(vector<string>& g, int n, int k) {
+        if (k == n) {
+            ans.push_back(g);
+            return;
+        }
+
+        for (int i = 0; i < n; ++i) {
+            if (check(g, n, k, i)) {
+                g[k][i] = 'Q';
+                trackback(g, n, k+1);
+                g[k][i] = '.';
+            }
+        }
+    }
+
+    vector<vector<string>> solveNQueens(int n)
+    {
+        vector<string> g(n, string(n, '.'));
+        trackback(g, n, 0);
+        return ans;
+    }
 }
 
 
@@ -730,4 +724,58 @@ bool canPartitionKSubsets(vector<int>& nums, int k)
 }
 #endif // 回溯法
 
+}
+
+
+//!！复原IP地址==============================================
+
+namespace _restoreIPAddresses {
+    static constexpr int SEG_COUNT = 4;
+
+    vector<string> ans;
+    vector<int> segments;
+
+    void trackback(const string& s, int segId, int segStart) {
+        // 如果找到了4段IP地址并且遍历完了字符串，那么就是一种答案
+        if (segId == SEG_COUNT) {
+            if (segStart == s.size()) {
+                string ipAddr;
+                for (int i = 0; i < SEG_COUNT; ++i) {
+                    ipAddr += to_string(segments[i]);
+                    if (i != SEG_COUNT-1) {
+                        ipAddr += ".";
+                    }
+                }
+                ans.push_back(move(ipAddr));
+            }
+            return;
+        }
+
+        // 如果还没有找到4段IP地址就已经遍历完字符串，那么提前回溯
+        if (segStart == s.size()) return;
+
+        // 不能有前导0，如果当前数字为0，那么这一段IP地址只能为0
+        if (s[segStart] == '0') {
+            segments[segId] = 0;
+            trackback(s, segId+1, segStart+1);
+        }
+
+        // 一般情况，枚举每一种可能性并递归
+        int addr = 0;
+        for (int segEnd = segStart; segEnd < s.size(); ++segEnd) {
+            addr = addr*10 + (s[segEnd] - '0');
+            if (addr > 0 && addr <= 0xFF) {
+                segments[segId] = addr;
+                trackback(s, segId+1, segEnd+1);
+            } else {
+                break;
+            }
+        }
+    }
+
+    vector<string> restoreIpAddresses(string s) {
+        segments.resize(SEG_COUNT);
+        trackback(s, 0, 0);
+        return ans;
+    }
 }
