@@ -50,4 +50,4 @@ _deps
 *.app
 
 # Clion
-cmake-build-debug-mingw/*
+cmake-build*/
