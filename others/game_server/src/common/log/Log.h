@@ -4,7 +4,7 @@
 #pragma once
 
 #include "LogDef.h"
-#include "../common/platform.h"
+#include "../base/platform.h"
 
 #include <spdlog/spdlog.h>
 
