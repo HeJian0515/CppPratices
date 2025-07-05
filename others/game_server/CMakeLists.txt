@@ -9,8 +9,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_subdirectory(src/common)
 
+find_package(Lua REQUIRED)
 
 target_include_directories(gs_common PUBLIC src/common)
 
 add_executable(game_server main.cpp)
-target_link_libraries(game_server PRIVATE gs_common)
+target_link_libraries(game_server
+        PRIVATE gs_common
+        PRIVATE ${LUA_LIBRARIES}
+)
