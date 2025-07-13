@@ -1,89 +1,55 @@
-function foo()
-    print("foo start")
-    local value = coroutine.yield("foo pause")
-    print("foo resume value: " .. tostring(value))
-    print("foo end")
-end
+-- resume-yield交换数据
+-- 第一个 resume 函数（没有对应等待它的 yield ）会把所有的额外参数传递给协程的主函数
+--[[ co = coroutine.create(function (a, b, c)
+    print("co", a, b, c+2)
+end)
+coroutine.resume(co, 1, 2, 3) -- co 1 2 5 ]]
 
--- 创建协同程序
-local co = coroutine.create(foo)
+-- 在函数coroutine.resume的返回值中，
+-- 第一个值是一个布尔值，表示协程是否成功运行，
+-- 之后的返回值对应协程函数中yield的返回值。
+--[[ co = coroutine.create(function (a, b)
+    coroutine.yield(a + b, a - b)
+end)
+print(coroutine.resume(co, 10, 5)) -- true 15 5 ]]
 
--- 启动协同程序
-local status, result = coroutine.resume(co)
-print("1:", result) -- 输出：暂停foo的执行
+-- 与之对应的是，函数 coroutine.yield 的返回值是对应resume函数的参数。
+--[[ co = coroutine.create(function (x)
+    print("co1", x)
+    print("co2", coroutine.yield())
+end)
 
--- 恢复协同程序的执行，并传入一个值
-status, result = coroutine.resume(co, 42)
-print("2", result)
+coroutine.resume(co, "hi") -- co1 hi
+coroutine.resume(co, 4, 5) -- co2 4, 5 ]]
 
 
 ---------------------------------------------------
-co = coroutine.create(
-    function (i)
-        print(i);
-    end
-)
-coroutine.resume(co, 1) -- 1
-print(coroutine.status(co)) -- dead
+-- 当一个协程调用函数yield时，它不是进入了一个新函数
+-- 而是返回一个挂起的调用（调用的是函数resume）
+-- 同样地，对函数resume的调用也不是启动一个新函数，
+-- 而是返回一个对应函数yield的调用
 
-
-co = coroutine.wrap(
-    function ()
-        print(i);
-    end
-)
-
-co(1)
-
-
-co2 = coroutine.create(
-    function ()
-        for i = 1, 10, 1 do
-            print(i)
-            if i == 3 then
-                print(coroutine.status(co2)) -- running
-                print(coroutine.running()) -- thread:XXXXX
-            end
-            coroutine.yield()
-        end
-    end
-)
-
-coroutine.resume(co2) -- 1
-coroutine.resume(co2) -- 2
-coroutine.resume(co2) -- 3
-
-print(coroutine.status(co2)) -- suspended
-print(coroutine.running())
-
----------------------------------------------------
-local newProductor
-
-function productor()
-    local i = 0
-    while true do
-        i = i + 1
-        send(i)   -- 将生产的物品发给消费者
-    end
+function send(x)
+    coroutine.yield(x)
 end
 
-function consumer()
+function producer()
     while true do
-        local i = receive()  -- 从生产者那里拿到物品
-        print(i)
+        local x = io.read() -- 产生新值
+        send(x) -- 发送给消费者
     end
 end
 
 function receive()
-    local status, value = coroutine.resume(newProductor)
+    local status, value = coroutine.resume(producer)
     return value
 end
 
-
-function send(x)
-    coroutine.yield(x)  -- x表示需要发送的值，值返回以后，就挂起该协同程序
+function consumer()
+    while true do
+        local x = receive() -- 接收新值
+        io.write(x, "\n") -- 消费
+    end
 end
 
---[[ newProductor = coroutine.create(productor)
-consumer() ]]
-
+producer = coroutine.create(producer)
