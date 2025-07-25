@@ -28,28 +28,32 @@ coroutine.resume(co, 4, 5) -- co2 4, 5 ]]
 -- 而是返回一个挂起的调用（调用的是函数resume）
 -- 同样地，对函数resume的调用也不是启动一个新函数，
 -- 而是返回一个对应函数yield的调用
+local newProductor
 
-function send(x)
-    coroutine.yield(x)
-end
-
-function producer()
-    while true do
-        local x = io.read() -- 产生新值
-        send(x) -- 发送给消费者
-    end
-end
-
-function receive()
-    local status, value = coroutine.resume(producer)
-    return value
+function productor()
+     local i = 0
+     while true do
+          i = i + 1
+          send(i)     -- 将生产的物品发送给消费者
+     end
 end
 
 function consumer()
-    while true do
-        local x = receive() -- 接收新值
-        io.write(x, "\n") -- 消费
-    end
+     while true do
+          local i = receive()     -- 从生产者那里得到物品
+          print(i)
+     end
 end
 
-producer = coroutine.create(producer)
+function receive()
+     local status, value = coroutine.resume(newProductor)
+     return value
+end
+
+function send(x)
+    coroutine.yield(x)     -- x表示需要发送的值，值返回以后，就挂起该协同程序
+end
+
+-- 启动程序
+newProductor = coroutine.create(productor)
+consumer()
