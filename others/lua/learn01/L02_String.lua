@@ -51,14 +51,29 @@ print(formattedString)  -- 输出: My name is Alice and I am 30 years old. ]]
 local repeatedStr = string.rep(str, 3)
 print(repeatedStr)  -- 输出: LuaLuaLua ]]
 
--- 将字符串转换为数字
+
+--region 字符转换
+
+-- 将整型数字转成字符
 --[[ local s1 = string.char(97) -- 'a' 的 ASCII 码是 97
 print(s1)  -- 输出: a
 s1 = string.char(97, 98, 99) -- 'abc'
 print(s1)  -- 输出: abc ]]
+
 -- 2
-local s1 = string.byte("ABCD") -- 获取字符串的第一个字符的 ASCII 码
+--[[ local s1 = string.byte("ABCD") -- 获取字符串的第一个字符的 ASCII 码
 print(s1)  -- 输出: 65
 s1 = string.byte("ABCD", 2) -- 获取字符串的第二个字符的 ASCII 码
-print(s1)  -- 输出: 66
+print(s1)  -- 输出: 66 ]]
 
+--endregion
+
+
+--region nil和字符串拼接
+
+--[[ local s1 = nil
+local s2 = "非空字符串"
+-- print(s1 .. s2) --异常
+print(string.format("%s@%s", s1, s2)) -- nil@非空字符串 ]]
+
+--endregion
