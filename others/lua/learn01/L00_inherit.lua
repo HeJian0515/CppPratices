@@ -1,3 +1,5 @@
+--region 定义类1
+
 -- 定义父类
 local Parent = {}
 
@@ -34,3 +36,19 @@ end
 local obj = Child:new(10, 20)
 obj:printX()  -- 输出：10
 obj:printY()  -- 输出：20
+
+--endregion
+
+
+--region 定义类2
+
+Account = class(function(acc, balance) 
+    acc.balance = balance
+end)
+
+function Account:withdraw(amount)
+    self.balance = self.balance - amount
+end
+
+
+--endregion

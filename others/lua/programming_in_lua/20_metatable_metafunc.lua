@@ -13,7 +13,8 @@
 -- print(getmetatable(print)) -- nil
 
 
--- ======================================================================
+--region Set类
+
 -- local mt = {} -- 集合的元表
 -- local Set = {}
 -- -- 使用指定的列表创建一个新的集合
@@ -104,7 +105,10 @@
 -- print(s1 > s1)
 -- print(s1 == s2 * s1)
 
--- __index元方法 ==================================================================
+--endregion
+
+
+--region __index元方法
 
 --[[ prototype = {x = 0, y = 0, width = 100, height = 100}
 
@@ -126,13 +130,21 @@ end ]]
 -- w = new {x = 10, y = 20}
 -- print(w.width) --> 100
 
--- __newindex元方法===========================================================
+--endregion
+
+
+--region __newindex元方法
+
 -- 当对一个表中不存在的索引赋值时，解释器就会查找_newindex元方法；
 -- 如果这个元方法存在，那么解释器就调用它而不执行赋值
 -- 如果这个元方法是一个表，解释器就在此表中执行赋值
 -- rawset(t, k, v) <=> t[k] = v, 绕过元方法
 
--- 20.4.3 具有默认值的表 ===========================================
+--endregion
+
+
+--region 20.4.3 具有默认值的表
+
 -- function setDefault(t, d)
 --     local mt = {__index = function() return d end}
 --     setmetatable(t, mt)
@@ -157,7 +169,11 @@ print(tab.x, tab.z) --> 10 , nil
 setDefault(tab, 0)
 print(tab.x, tab.z) --> 10, 0 ]]
 
--- 20.4.4 跟踪对表的访问 ========================================================
+--endregion
+
+
+--region 20.4.4 跟踪对表的访问
+
 --[[ function track(t)
     local proxy = {} -- 't'的代理表
 
@@ -201,28 +217,25 @@ print(#t)
 for k, v in pairs(t) do print(k, v) end
  ]]
 
+--endregion
 
--- 2.4.5只读的表 =============================================================
--- function readOnly(t)
---     local proxy = {}
---     local mt = {
---         __index = t, 
---         __newindex = function(t, k, v)
---             error("attempt to update a read-only table", 2)
---         end
---     }
---     setmetatable(proxy, mt)
---     return proxy
--- end
 
--- days = readOnly{"Sunday", "Monday", "Tuesday", "Wednesday", "Thusday", "Friday", "Saturday"}
--- print(days[1])
--- days[2] = "Noday"
+--region 2.4.5只读的表
 
-local mt = {}
-mt.x = 1
-mt.__index = mt
-local t = {}
-t.__index = t
-setmetatable(t, mt)
-print(t.x)
+--[[ function readOnly(t)
+     local proxy = {}
+     local mt = {
+         __index = t, 
+         __newindex = function(t, k, v)
+             error("attempt to update a read-only table", 2)
+         end
+     }
+     setmetatable(proxy, mt)
+     return proxy
+ end
+
+ days = readOnly{"Sunday", "Monday", "Tuesday", "Wednesday", "Thusday", "Friday", "Saturday"}
+ print(days[1])
+ days[2] = "Noday"]]
+
+--endregion

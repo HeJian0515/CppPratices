@@ -1,1 +1,1 @@
-﻿require "learn01/L02_String"
+﻿require("learn01/L02_String")

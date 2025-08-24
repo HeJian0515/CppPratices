@@ -1,3 +1,5 @@
+--region Account类
+
 Account = {
     balance = 0,
 }
@@ -45,7 +47,11 @@ function s:getLimit()
     return self.blance * 0.10
 end
 
--- 21.3多重继承 =========================================================================
+--endregion
+
+
+--region 21.3多重继承
+
 local function search(k, plist)
     for i = 1, #plist do
         local v = plist[i][k]
@@ -86,8 +92,11 @@ NamedAccount = createClass(Account, Named)
 account= NamedAccount:new{name = "Paul"}
 print(account:getname()) --> Paul
 
+--endregion
 
--- 21.4 私有性 =================================================================
+
+--region 21.4 私有性
+
 -- 通过两个表实现：一个表来保存对象的状态， 另一个表用于保存对象的操作(或接口)
 function newAccount(initialBalance)
     local self = {balance = initialBalance}
@@ -109,8 +118,11 @@ function newAccount(initialBalance)
     }
 end
 
+--endregion
 
--- 21.5单方法对象 ==================================================================
+
+--region 21.5单方法对象
+
 function newObject(value)
     return function (action, v)
         if action == "get" then return value
@@ -125,7 +137,10 @@ print(d("get")) --> 0
 d("set", 10) 
 print(d("get")) --> 10
 
--- 21.6 对偶表示实现私有性 ===============================================================
+--endregion
+
+
+--region 21.6 对偶表示实现私有性
 
 local balance = {}
 
@@ -154,3 +169,5 @@ end
 a = Account:new{}
 a:deposit(100.00)
 print(a:balance())
+
+--endregion

@@ -1,4 +1,5 @@
---! "false"代表布尔类型的false和nil
+--region "false"代表布尔类型的false和nil
+
 -- 逻辑运算符and，如果它的第一个操作数为"false"，则返回第一个操作数，否者返回第二个
 -- or，如果第一个操作数不为"false",则返回第一个操作数，否者返回第二个
 print(4 and 5) -- 5
@@ -13,7 +14,10 @@ if not x then
     x = 0
 end
 
---! and运算符优先级高于or
+--endregion
+
+
+--region and运算符优先级高于or
 
 function round(x)
     local f = math.floor(x)
@@ -36,3 +40,5 @@ function unbiasedRound(x)
 end
 
 print(unbiasedRound(2.5)) -- 2
+
+--endregion

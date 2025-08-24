@@ -1,6 +1,14 @@
--- 字符串长度
+--region 字符串长度
+
 --[[ local str = "Hello, World!"
 print(#str)  -- 输出: 13 ]]
+
+local s1 = "你好"
+print(utf8.len(s1))  -- 输出: 2
+print(#s1)  -- 输出: 6 (每个汉字占3个字节)
+print(string.len(s1))  -- 输出: 6
+
+--endregion
 
 -- 大小写转换
 --[[ local str = "My Name Is Lua"
@@ -27,6 +35,8 @@ print(reversedStr)  -- 输出: gnimmargorP auL ]]
 
 
 
+--region 字符串拼接
+
 -- 1.使用 .. 操作符来进行字符串连接
 --[[ local str1 = "Hello"
 local str2 = "World"
@@ -50,6 +60,8 @@ print(formattedString)  -- 输出: My name is Alice and I am 30 years old. ]]
 --[[ local str = "Lua"
 local repeatedStr = string.rep(str, 3)
 print(repeatedStr)  -- 输出: LuaLuaLua ]]
+
+--endregion
 
 
 --region 字符转换

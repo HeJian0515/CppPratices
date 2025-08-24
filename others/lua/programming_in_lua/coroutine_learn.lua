@@ -1,4 +1,5 @@
--- resume-yield交换数据
+--region resume-yield交换数据
+
 -- 第一个 resume 函数（没有对应等待它的 yield ）会把所有的额外参数传递给协程的主函数
 --[[ co = coroutine.create(function (a, b, c)
     print("co", a, b, c+2)
@@ -22,8 +23,11 @@ end)
 coroutine.resume(co, "hi") -- co1 hi
 coroutine.resume(co, 4, 5) -- co2 4, 5 ]]
 
+--endregion
 
----------------------------------------------------
+
+--region 生产者消费者
+
 -- 当一个协程调用函数yield时，它不是进入了一个新函数
 -- 而是返回一个挂起的调用（调用的是函数resume）
 -- 同样地，对函数resume的调用也不是启动一个新函数，
@@ -57,3 +61,5 @@ end
 -- 启动程序
 newProductor = coroutine.create(productor)
 consumer()
+
+--endregion
