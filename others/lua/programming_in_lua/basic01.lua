@@ -42,3 +42,29 @@ end
 print(unbiasedRound(2.5)) -- 2
 
 --endregion
+
+--region 循环
+
+local sum = 0
+for i = 1, 100 do
+    sum = sum + i
+end
+print(sum)
+
+local i = 1
+sum = 0
+while i <= 100 do
+    sum = sum + i
+    i = i + 1
+end
+print(sum)
+
+i = 1
+sum = 0
+repeat
+    sum = sum + i
+    i = i + 1
+until i > 100
+print(sum)
+
+--endregion

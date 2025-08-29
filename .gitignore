@@ -51,3 +51,5 @@ _deps
 # Clion
 cmake-build*/
 *.idea/
+
+*.vscode/
