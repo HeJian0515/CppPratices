@@ -3,10 +3,10 @@
 --[[ local str = "Hello, World!"
 print(#str)  -- 输出: 13 ]]
 
-local s1 = "你好"
+--[[local s1 = "你好"
 print(utf8.len(s1))  -- 输出: 2
 print(#s1)  -- 输出: 6 (每个汉字占3个字节)
-print(string.len(s1))  -- 输出: 6
+print(string.len(s1))  -- 输出: 6]]
 
 --endregion
 
