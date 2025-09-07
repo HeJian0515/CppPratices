@@ -1,3 +1,33 @@
+--协程有四种状态
+--suspended：挂起状态，表示协程正在等待其他协程的唤醒，刚刚创建的或遇到函数中的yield关键字时处于此状态
+--running：运行状态，表示协程正在执行
+--normal：正常状态，表示协程没有挂起或正在运行
+--dead：死亡状态，表示协程已经执行完毕或在运行代码时发生了错误
+
+--创建协程
+--[[local co = coroutine.create(function()
+     print("123")
+end)
+print(coroutine.status(co)) -- suspended
+coroutine.resume(co)
+print(coroutine.status(co)) -- dead]]
+
+--wrap创建一个协程
+-- 不过它返回的是一个函数，而不是协程。并且如果协程中出现错误，会中止协程并且将错误抛出。
+--[[
+local wrap = coroutine.wrap(function()
+     for i = 1, 2 do
+          print(i)
+          coroutine.yield()
+     end
+end)
+wrap() -- 1
+wrap() -- 2
+wrap() -- 什么都没打印，协程执行完毕（这是因为碰到yield后，协程的状态为挂起，而不是死亡）
+wrap() --error cannot resume dead coroutine
+]]
+
+
 --region resume-yield交换数据
 
 -- 第一个 resume 函数（没有对应等待它的 yield ）会把所有的额外参数传递给协程的主函数
@@ -32,7 +62,7 @@ coroutine.resume(co, 4, 5) -- co2 4, 5 ]]
 -- 而是返回一个挂起的调用（调用的是函数resume）
 -- 同样地，对函数resume的调用也不是启动一个新函数，
 -- 而是返回一个对应函数yield的调用
-local newProductor
+--[[local newProductor
 
 function productor()
      local i = 0
@@ -60,6 +90,6 @@ end
 
 -- 启动程序
 newProductor = coroutine.create(productor)
-consumer()
+consumer()]]
 
 --endregion
