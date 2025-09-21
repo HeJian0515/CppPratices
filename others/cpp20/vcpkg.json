@@ -1,0 +1,7 @@
+{
+  "builtin-baseline" : "0cb95c860ea83aafc1b24350510b30dec535989a",
+  "dependencies" : [ {
+    "name" : "cppcoro",
+    "version>=" : "2022-10-25"
+  } ]
+}
