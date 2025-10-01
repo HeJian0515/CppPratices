@@ -1,7 +1,12 @@
---- 测试函数
 ---@param x number
 ---@param y number
 ---@return number
-function f(x, y)
-    return (x^2 * math.sin(y) / (1-x))
+function add(x, y)
+    return x + y
 end
+
+--print(add(1, 2)) -- Output: 3
+
+local test = require("test")
+local t = test.new()
+t:test() -- Output: test

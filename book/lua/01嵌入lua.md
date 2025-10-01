@@ -1,5 +1,7 @@
 [Lua_CPP_2022](https://github.com/zincPower/Lua_CPP_2022)
 
+[Lua与C在Android上的互调](https://zhuanlan.zhihu.com/p/672272489)
+
 ## 例子
 
 一个独立的解释器
@@ -42,15 +44,55 @@ print(a)
 
 ## 栈
 
+![image-20251001111448084](./pictures/01嵌入lua/image-20251001111448084.png)
+
 使用栈在Lua 和C之间交换数据。栈中的每个元素都能保存 Lua 中任意类型的值 。 当我们想要从Lua中获取一个值（例如一个全局变量的值）时，只需调用 Lua ,Lua 就会将指定的值压入栈中 。 当想要将一个值传给 Lua 时， 首先要将这个值压入栈，然后调用 Lua 将其从栈中弹出 即可。 
+
+### Push操作
+
+- lua_pushnil(lua_State*)：将nil推入堆栈
+- lua_pushboolean(lua_State*, bool)：将一个布尔值压入到栈中
+- lua_pushnumber(lua_State*, lua_Number)： 将双精度值压入栈中
+- lua_pushinteger(lua_State*, lua_Integer)：将一个有符号的整数压入到栈中
+- lua_pushstring (lua_State*, const char*)： 将一个字符串压入到栈中
+- lua_pushlightuserdata(lua_State *L, void *p): 将一个指针压入到栈中
+
+> ***注意：lua_pushstring压入一个字符串，Lua会创建自己的副本，因此一旦压入栈之后，你可以修改和释放之前的字符串对象。***
 
 ### 查询元素
 
 第一个被压入栈的元素索引为1，第二个被压入栈的元素索引为2，依此类推。我们还可以以栈顶为参照 ，使用负数索引来访问栈中的元素。此时，－1表示栈顶元素（ 即最后被压入栈的元素），-2表示在它之前被压入栈的元素，依此类推。例如，调用lua_tostring(L,-1)会将栈顶的值作为字符串返回 。 
 
+> ***注意，栈没有越界之说，如果指定的栈索引无效，取出来的值是nil***
+
+- int lua_isnumber(lua_State*, int)：检查提供的索引处的元素是否为数字
+- int lua_isstring(lua_State*, int)：检查提供的索引处的元素是否为字符串
+- int lua_isboolean(lua_State*, int)：检查所提供索引处的元素是否为布尔值
+- int lua_istable(lua_State*, int)：检查给定索引处的元素是否为表
+- int lua_isnil(lua_State*, int)：检查给定索引处的元素是否为nil
+- int lua_type(lua_State*, int)：返回类型的枚举值
+
 ```c
 int lua_is*(lua_State *L, int index);
 ```
+
+**其中lua_type返回的枚举值有：**
+
+- LUA_TNUMBER：代表一个Lua数字类型
+- LUA_TSTRING：代表一个Lua字符串类型
+- LUA_TBOOLEAN：代表一个 Lua 布尔值类型
+- LUA_TTABLE：代表一个Lua表类型
+- LUA_TNIL：代表nil类型
+
+### 取值
+
+- lua_toboolean(lua_State*, int)：返回true或false
+- lua_tonumber(lua_State*, int)：返回一个双精度值
+- lua_tointeger(lua_State*, int)：返回一个有符号的整数值
+- lua_tostring(lua_State*, int)：返回字符串，是一个`const char*`类型
+- lua_gettop(lua_State*)：获得Lua栈顶元素的索引，**一般用于判断有函数有几个入参**
+
+> ***针对lua_tostring弹出的字符串，可能会被Lua虚拟机回收，请拷贝成自己的副本。***
 
 ### 其他操作
 
@@ -60,6 +102,10 @@ int lua_gettop(lua_State *L);
 // 修改栈中的元素数量 。 如果之前的栈顶比新设置的更高，那么高出来的这些元素就会被丢弃；反之，该函数会向栈中压人nil来补足大小。lua_settop(L, 0)用于清空栈
 void lua_settop(lua_State *L, int index);
 ```
+
+### 加载Lua脚本
+
+Lua提供两种方式加载Lua脚本，一种通过`luaL_loadfile`，以文件的方式加载； 另外一种通过`luaL_loadstring`，以脚本字符串内容的方式加载。
 
 ### 内存分配
 
@@ -115,7 +161,9 @@ void setcolorfield(lua_State *L, const char *index, int value) {
 }
 ```
 
-## 调用Lua函数
+## C调用Lua函数
+
+![image-20251001095220572](./pictures/01嵌入lua/image-20251001095220572.png)
 
 ```lua
 --- main.lua 测试函数
@@ -132,11 +180,17 @@ double f(lua_State *L, double x, double y) {
     int isnum;
     double z;
 
+   	// Lua函数add从全局栈中取出压入到函数的Lua栈，
+    // 这里告诉Lua虚拟机，我们将要调用的Lua函数f   
     lua_getglobal(L, "f");
     lua_pushnumber(L, x);
     lua_pushnumber(L, y);
 
     // 调用函数(两个参数，一个结果)
+    // 调用lua_pcall，首先从栈顶弹出入参，最后弹出函数
+    // 第二个参数告诉Lua虚拟机弹出2个变量
+    // 第三个参数告诉Lua虚拟机返回一个值
+    // 第四个参数：错误处理。值为0的参数告诉Lua在lua_pcall失败时将错误信息推入栈
     if (lua_pcall(L, 2, 1, 0) != LUA_OK) {
         error(L, "error running function 'f' : %s", lua_tostring(L, -1));
     }
@@ -167,47 +221,45 @@ int main() {
 
 ## Lua调用C语言
 
-```cpp
-#include <iostream>
-#include  <string>
-#include <cstring>
-#include <cstdlib>
-#include <cstdio>
+![image-20251001111041821](./pictures/01嵌入lua/image-20251001111041821.png)
 
+```cpp
+#include <print>
 #include <lua.hpp>
 
 using namespace std;
 
-void error(lua_State *L, const char *fmt, ...) {
-    va_list argp;
-    va_start(argp, fmt);
-    vfprintf(stderr, fmt, argp);
-    va_end(argp);
-    lua_close(L);
-    exit(EXIT_FAILURE);
-}
-
 extern "C" {
-    static int l_sin(lua_State *L) {
-        double d = luaL_checknumber(L, 1);
-        lua_pushnumber(L, sin(d));
-        return 1; // 返回值个数
+    // 第一步：声明 C 函数
+    int call_add(lua_State* L) {
+        // 先从栈中取出参数，1和2是a和b在栈中的位置
+        int a = lua_tonumber(L, 1);
+        int b = lua_tonumber(L, 2);
+        // 从栈中弹出已经取值的2个变量
+        lua_pop(L, 2);
+        // 调用C相关函数
+        int result = a + b;
+        // 结果压入栈
+    	// Lua脚本中取的返回值这里push进去的
+        lua_pushnumber(L, result);
+        // 注意，return 1是告知Lua虚拟机返回一个值
+        return 1;
     }
 }
+
 
 int main() {
-    lua_State *L = luaL_newstate(); // 打开lua
-    luaL_openlibs(L); // 打开lua标准库
-	
-    // 注册函数原型：typedef int (*lua_CFunction) (lua_State *L)
-    lua_pushcfunction(L, l_sin);
-    // 将这个函数类型的值赋值给全家变量mysin
-    lua_setglobal(L, "mysin");
-    // 加载lua文件
-    if (luaL_dofile(L, "main.lua") != LUA_OK) {
-        error(L, "can't load main.lua : %s", lua_tostring(L, -1));
-    }
+    lua_State* L = luaL_newstate();
+    luaL_openlibs(L);
 
+    // 第二步：注册 C 函数到 Lua 环境中
+    lua_register(L, "add", call_add);
+
+    if (luaL_dofile(L, "main.lua") != LUA_OK) {
+        println("Error running main.lua: {}", lua_tostring(L, -1));
+        lua_close(L);
+        exit(EXIT_FAILURE);
+    }
 
     lua_close(L);
     return 0;
@@ -215,7 +267,8 @@ int main() {
 ```
 
 ```lua
-print(mysin(30 * math.pi / 180));
+-- lua调用C函数
+print(add(1, 2)) 
 ```
 
 ### C模块
