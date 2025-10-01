@@ -10,3 +10,6 @@ end
 local test = require("test")
 local t = test.new()
 t:test() -- Output: test
+
+global = {}
+global.width = 1920

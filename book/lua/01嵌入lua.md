@@ -2,6 +2,8 @@
 
 [Lua与C在Android上的互调](https://zhuanlan.zhihu.com/p/672272489)
 
+[常用lua c api ](https://www.cnblogs.com/sailJs/p/18715272)
+
 ## 例子
 
 一个独立的解释器
@@ -116,52 +118,54 @@ lua_newstate来创建我们自己的 Lua 状态即可。
 
 ### 操作表
 
-```c
-// 假设表位于栈顶
-int getcolorfield(lua_State *L, const char *key) {
-    int result, isnum;
-    lua_pushstring(L, key); // 压入键
-    //  lua_gettable函数以这个表在栈中的位置为参数，从栈中弹出键再压入相应的值 。
-    lua_gettable(L, -2); // 获取background[key]
-    result = (int)(lua_tonumberx(L, -1, &isnum) * MAX_COLOR);
-    if (!isnum) {
-        error(L, "invalid component '%s' in color", key);
-    }
-    lua_pop(L, 1); // 移除数值
-    return result;
-}
-
-// 假设表位于栈顶
-void setcolorfiled(lua_State *L, const char *index, int value) {
-    lua_pushstring(L, index); // 键
-    lua_pushnumber(L, (double)value/MAX_COLOR); // 值
-    lua_settable(L, -3);
-}
-
-// 用于定义单个颜色，它会创建一张表，设置相应的字段，并将这个表赋给相应的全局变量
-void setcolor(lua_State *L, struct ColortTable *ct) {
-    lua_newtable(L); // 创建表
-    setcolorfield(L, "red", ct->red);
-    setcolorfield(L, "green", ct->green);
-    setcolorfield(L, "blue", ct->blue);
-    // 函数 lua _ setglobal 弹出表 ， 并将其设置为具有指定名称全局变量的值 。
-    lua_setglobal(L, ct->name); // 'name' = table
-}
-```
+[lua table操作实例详解](https://blog.csdn.net/qq_41286356/article/details/119419393)
 
 ```c
-lua_pushstring(L, key);
-lua_gettable(L, -2);
-// 重写为
-lua_getfield(L, -1, key); // 会返回结果的类型
+lua_gettable
+lua_getglobal(L, "mytable") <== push mytable
+lua_pushnumber(L, 1)        <== push key 1
+lua_gettable(L, -2)         <== pop key 1, push mytable[1]
 
-void setcolorfield(lua_State *L, const char *index, int value) {
-    lua_pushnumber(L, (double)value/MAX_COLOR);
-    lua_setfield(L, -2, index);
-}
+lua_settable
+lua_getglobal(L, "mytable") <== push mytable
+lua_pushnumber(L, 1)        <== push key 1
+lua_pushstring(L, "abc")    <== push value "abc"
+lua_settable(L, -3)         <== mytable[1] = "abc", pop key & value
+
+lua_rawget:
+用法同lua_gettable,但更快(因为当key不存在时不用访问元方法__index)
+
+lua_rawset:
+用法同lua_settable,但更快(因为当key不存在时不用访问元方法__newindex)
+
+lua_rawgeti必须为数值键
+lua_getglobal(L, "mytable") <== push mytable
+lua_rawgeti(L, -1, 1)       <== push mytable[1]，作用同下面两行调用
+--lua_pushnumber(L, 1)      <== push key 1
+--lua_rawget(L,-2)          <== pop key 1, push mytable[1]
+
+lua_rawseti必须为数值键
+lua_getglobal(L, "mytable") <== push mytable
+lua_pushstring(L, "abc")    <== push value "abc"
+lua_rawseti(L, -2, 1)       <== mytable[1] = "abc", pop value "abc"
+
+lua_getfield必须为字符串键
+lua_getglobal(L, "mytable") <== push mytable
+lua_getfield(L, -1, "x")    <== push mytable["x"]，作用同下面两行调用
+--lua_pushstring(L, "x")    <== push key "x"
+--lua_gettable(L,-2)        <== pop key "x", push mytable["x"]
+
+lua_setfield必须为字符串键
+lua_getglobal(L, "mytable") <== push mytable
+lua_pushstring(L, "abc")    <== push value "abc"
+lua_setfield(L, -2, "x")    <== mytable["x"] = "abc", pop value "abc"
 ```
+
+
 
 ## C调用Lua函数
+
+[C++ 调用 Lua 函数](https://juejin.cn/post/7302965547087953961)
 
 ![image-20251001095220572](./pictures/01嵌入lua/image-20251001095220572.png)
 
