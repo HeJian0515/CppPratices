@@ -161,13 +161,113 @@ lua_pushstring(L, "abc")    <== push value "abc"
 lua_setfield(L, -2, "x")    <== mytable["x"] = "abc", pop value "abc"
 ```
 
+#### 示例
 
+```lua
+-- 配置文件
+width = 200
+height = 300
+
+BLUE = { r = 0, g = 0, b = 255 }
+-- 其他颜色定义
+
+background = BLUE
+```
+
+```cpp
+#include <cstdlib>
+#include <lua.hpp>
+#define  MAX_COLOR  255
+
+extern "C" {
+struct ColorTable {
+    char *name;
+    unsigned char red, green, blue;
+} ColorTable[] = {
+    {"WHITE", MAX_COLOR, MAX_COLOR, MAX_COLOR},
+    {"BLACK", 0, 0, 0},
+    {"RED", MAX_COLOR, 0, 0},
+    {"GREEN", 0, MAX_COLOR, 0},
+    {"BLUE", 0, 0, MAX_COLOR},
+    // ...其它颜色...
+    {NULL, 0, 0, 0} // 哨兵
+};
+
+
+// 假设表位于栈顶
+int getcolorfield(lua_State *L, const char *key) {
+    int result, isnum;
+    /*lua_pushstring(L, key);
+    lua_gettable(L, -2); // 获取background[key]*/
+    lua_getfield(L, -1, key); // 获取background[key]
+    result = (int) (lua_tonumberx(L, -1, &isnum) * MAX_COLOR);
+    if (!isnum) {
+        lua_close(L);
+        exit(1);
+    }
+    lua_pop(L, 1);
+    return result;
+}
+
+void setcolorfield(lua_State *L, const char *key, int value) {
+    /*lua_pushstring(L, key);
+    lua_pushnumber(L, value / (double) MAX_COLOR);
+    lua_settable(L, -3); */
+    lua_pushnumber(L, value / (double) MAX_COLOR);
+    lua_setfield(L, -2, key);
+}
+
+void setcolor(lua_State *L, struct ColorTable *ct) {
+    lua_newtable(L); // 创建一个table, 并将其压栈
+    setcolorfield(L, "red", ct->red);
+    setcolorfield(L, "green", ct->green);
+    setcolorfield(L, "blue", ct->blue);
+    // 弹出表
+    lua_setglobal(L, ct->name); // 设置全局变量background.name = table
+}
+}
+
+```
+
+
+
+## C读取Lua全局变量（Lua作为配置文件）
+
+```lua
+-- 定义窗口大小
+width = 200
+height = 300
+```
+
+```c
+int getglobalint(lua_State *L, const char *var) {
+    int isnum, result;
+    lua_getgloal(L, var);
+    result = (int)lua_tointergerx(L, -1, &isnum);
+    if (!isnum) {
+        error(L, "'%s' should be a number\n", var);
+     lua_pop(L, 1); // 从栈中移除结果
+        return result;
+    }
+}
+
+void load(lua_State* L, const char *fname, int *w, int *h) {
+    if (lua_loadfile(L, fname) || lua_pcall(L, 0, 0, 0)) {
+        error(L, "cannot run config. file: '%s'", lua_tostring(L, -1));
+    }
+    *w = getglobal(L, "width");
+    *h = getglobal(L, "height");
+}
+```
 
 ## C调用Lua函数
 
 [C++ 调用 Lua 函数](https://juejin.cn/post/7302965547087953961)
 
 ![image-20251001095220572](./pictures/01嵌入lua/image-20251001095220572.png)
+
+> 调用 Lua 函数的 API 规范很简单 ： 首先，将待调用的函数压栈；然后，压入函数的参数；
+> 接着用 lua_pcall 进行实际的调用；最后，从栈中取出结果 。
 
 ```lua
 --- main.lua 测试函数
@@ -224,6 +324,11 @@ int main() {
 ```
 
 ## Lua调用C语言
+
+> Lua 调用 C 函数时，也使用了一个与 C 语言调用 Lua 函数时相同类型的栈， C 函数从栈中获取参数 ， 并将结果压入栈中 。
+>
+> 这个栈不是一个全局结构 ；每个函数都有其私有的局部枝（ private local stack ） 。 当 Lua 调用一个 C 函数时，第一个参数总是位于这个局部栈中索引为1 的位置 。 即使一个 C 函数调用了 Lua 代码，而且 Lua 代码又再次调用了同一个（或其他）的 C 函
+> 数，这些调用每一次都只会看到本次调用自己的私有枝，其中索引为 1 的位置上就是第一个参数 。
 
 ![image-20251001111041821](./pictures/01嵌入lua/image-20251001111041821.png)
 
@@ -350,8 +455,7 @@ extern "C" int luaopen_mylib(lua_State *L) {
 4. **将模块进行编译为库。**
 
 用代码（ Windows 系统下为 mylib.dll, Linux 类系统下为mylib.so ）创建一个动态链接库，
-并将这个库放到 C 语言路径中 的某个地方。在完成了这些步骤后，就可以使用 `require` 在
-Lua 中直接加载这个模块了：
+并将这个库放到 C 语言路径中 的某个地方。在完成了这些步骤后，就可以使用 `require` 在Lua 中直接加载这个模块了：
 
 5. **用C模块**
 
@@ -365,6 +469,7 @@ print("source:", currentPath)
 package.cpath = package.cpath .. ";" .. currentPath .. "lib/mylib"
 
 local mylib = require "mylib"
+-- 上述的语句会将动态库 my lib 链接到 Lt风 查找函数 luaopen_mylib ，将其注册为一个 C 语言函数，然后调用它以打开模块
 
 print("------------------ mylib ------------------")
 print("mylib", mylib)
@@ -420,4 +525,105 @@ dir	function: 0x105720e20
 ```
 
 
+
+## 编写C函数技巧
+
+### 数组操作
+
+```c
+void lua_geti(lua_State *L, int index, int kay);
+void lua_seti(lua_State *L, int index, int kay);
+void lua_rawgeti(lua_State *L, int index, int kay);
+void lua_rawseti(lua_State *L, int index, int kay);
+```
+
+map函数：该函数对数组中的所有元素调用一个指定的 函数，然后用此函数返回的结果替换掉对应的数组元素 。
+
+```c
+int l_map(lua_State *L) {
+    int i, n;
+    // 第一个参数必须是一张表t
+    luaL_checktype(L, 1, LUA_TTABLE);
+    // 第二个参数必须是一个函数f
+    luaL_checktype(L, 2, LUA_TFUNCTION);
+    
+    n = luaL_len(L, 1); // 获取表的大小
+    for (int i = 1; i <= n; i++) {
+        lua_pushvalue(L, 2); // 压入f
+        lua_geti(L, 1, i); // 压入t[i]
+        lua_call(L, 1, 1); // 调用f(t[i])
+        lua_seti(L, 1, i); // t[i] = result
+    }
+    
+    return 0; //没有返回值
+}
+```
+
+### 字符串操作
+
+当 C 函数接收到一个 Lua 字符串为参数时，必须遵守两条规则：在使用字符串期间不能从栈中将其弹出，而且不应该修改字符串 。
+
+如果要把字符串 s 从 i 到j （包含）的子串传递给 Lua
+`lua_pushlstring(Lm s+i, j-i+1);`
+
+```c
+static int l_split(lua_State *L) {
+    const char *s = luaL_checkstring(L, 1); // 目标字符串
+    const char *sep = luaL_checkstring(L, 2) // 分隔符
+    const char *e;
+    int i = 1;
+    
+    lua_newtable(L); // 结果表
+    while ((e = strchr(s, *sep) != NULL) {
+        lua_pushlstring(L, s, e-s); // 压入字串
+        lua_rawseti(L, -2, i++); // 向表中插入
+       s = e + 1; // 跳过分隔符
+    }
+    // 插入最后一个子串
+    lua_pushstring(L, s);
+    lua_rawseti(L, -2, i);
+    
+    return 1; // 将结果表返回
+}
+```
+
+`const char *lua_pushfstring(lua_State *L, const char *fmt, ...)`
+
+该函数在某种程度上类似于 C 函数 sprintf ，它们都会根据格式字符串和额外的参数来创建字符串 。 然而，与sprintf 不同，使用lua_pushfstring 时不需要提供缓冲区。不管字符串有多大，Lua 都会动态地为我们创建 。
+
+### 注册表
+
+注册表（ registry）是一张只能被 C 代码访问的全局表。通常情况下，我们使用注册表来存储多个模块间共享的数据。
+
+要获取注册表中键为 ” Key ”的值，可以使用如下的调用：
+
+```c
+lua_getfield(L, LUA_REGISTRYINDEX , ”Key ”) ;
+```
+
+### 上值
+
+注册表提供了全局变量 ，而上值（upvalue） 则实现了一种类似于 C 语言静态变量 （只在特定的函数中可见）的机制 。 每一次在 Lua 中创建新的 C 函数时，都可以将任意数量的上值与这个函数相关联，而每个上值都可以保存一个 Lua 值 。
+
+```c 
+static int counter(lua_State *L) {
+    int val = lua_tointeger(L, lua_upvalueindex(1));
+    lua_pushinteger(L, ++val); // 新值
+    lua_copy(L, -1, lua_upvalueindex(1)); // 更新上值
+    return 1;
+}
+```
+
+### 共享的上值
+
+我们经常需要在 同一个库的所有函数之间共享某些值或变量，虽然可以用注册表来完成这个任务，但也可以使用上值。
+
+```c 
+// 创建库的表（'lib'是函数的列表)
+luaL_newlibtable(L, lib);
+// 创建共享上值
+lua_newtable(L);
+// 将表lib中的函数加入到新库中，将之前的表共享为上值
+luaL_setfuncs(L, lib, 1);
+```
 
